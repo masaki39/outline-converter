@@ -1,6 +1,6 @@
 # Demo
 
-![](demo/demo1.gif)
+![](https://github.com/masaki39/outline-converter/blob/main/demos/demo1.gif)
 (※Use hotkeys in demo)
 # How to use 
 
