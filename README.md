@@ -14,7 +14,7 @@ If you imported notes named `[[@citekey]]` from Zotero through [Citations](https
 
 # Settings
 
-![[image1.png]]
+![](https://github.com/masaki39/outline-converter/blob/main/images/image1.png)
 
 You can choose whether the indentation level include or note.
 Add customized text before or after each text.
