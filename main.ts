@@ -45,6 +45,16 @@ export default class OutlineConverter extends Plugin {
 		await this.loadSettings();
 		
 		// transform content to lines
+		async function splitContent() {
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice('No active file.');
+				return;
+			}
+			const fileContent = await this.app.vault.read(activeFile);
+			const lines = fileContent.split(/\r?\n/);
+			return lines;
+		}		
 
 		//　funstion: output to the section
 		function outputToSection(
@@ -91,12 +101,8 @@ export default class OutlineConverter extends Plugin {
 			name: 'Custom converter',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				
-				// return if no active file
-				const activeFile = this.app.workspace.getActiveFile();
-				if (!activeFile) {
-					new Notice('No active file.');
-					return;
-				}
+				// get lines
+				const lines = await splitContent.call(this);
 				
 				// convert line break
 				const frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
@@ -110,9 +116,6 @@ export default class OutlineConverter extends Plugin {
 				const postText4 = this.settings.mySetting9.replace(/\\n/g, "\n");
 				const postText5 = this.settings.mySetting11.replace(/\\n/g, "\n");
 				
-				// get lines
-				const fileContent = await this.app.vault.read(activeFile);
-				const lines = fileContent.split(/\r?\n/);
 				const tabSize = 4;
 
 				// ignore frontmatter index
@@ -182,16 +185,9 @@ export default class OutlineConverter extends Plugin {
 			name: 'Section, Paragraph, Content, Reference',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
-				// return if no active file
-				const activeFile = this.app.workspace.getActiveFile();
-				if (!activeFile) {
-					new Notice('No active file.');
-					return;
-				}
-				
 				// get lines
-				const fileContent = await this.app.vault.read(activeFile);
-				const lines = fileContent.split(/\r?\n/);
+				const lines = await splitContent.call(this);
+				
 				const tabSize = 4;
 
 				// ignore frontmatter index
@@ -266,16 +262,9 @@ export default class OutlineConverter extends Plugin {
 			name: 'Section, Paragraph, Skip, Content, Reference',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
-				// return if no active file
-				const activeFile = this.app.workspace.getActiveFile();
-				if (!activeFile) {
-					new Notice('No active file.');
-					return;
-				}
-				
 				// get lines
-				const fileContent = await this.app.vault.read(activeFile);
-				const lines = fileContent.split(/\r?\n/);
+				const lines = await splitContent.call(this);
+				
 				const tabSize = 4;
 
 				// ignore frontmatter index
