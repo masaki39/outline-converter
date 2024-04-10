@@ -1,7 +1,7 @@
 import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface OutlineConverterSettings {
-	mySetting1: string;
+	sectionName: string;
 	mySetting2: string;
 	mySetting3: string;
 	mySetting4: string;
@@ -20,7 +20,7 @@ interface OutlineConverterSettings {
 }
 
 const DEFAULT_SETTINGS: OutlineConverterSettings = {
-	mySetting1: 'Output',
+	sectionName: 'Output',
 	mySetting2: '\\n\\n## ', //indent level 1
 	mySetting3: '',
 	mySetting4: '\\n\\n### ', // 2
@@ -43,19 +43,35 @@ export default class OutlineConverter extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
+		
+		// transform each indentation level method
+		
+		// adjust result text to pandoc style method
+		
 		// custom command
 		this.addCommand({
 			id: 'outline-converter1',
 			name: 'Custom converter',
 			callback: async() => {
-
+				
 				// return if no active file
 				const activeFile = this.app.workspace.getActiveFile();
 				if (!activeFile) {
 					new Notice('No active file.');
 					return;
 				}
+
+				// convert line break
+				const frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
+				const frontText2 = this.settings.mySetting4.replace(/\\n/g, "\n");
+				const frontText3 = this.settings.mySetting6.replace(/\\n/g, "\n");
+				const frontText4 = this.settings.mySetting8.replace(/\\n/g, "\n");
+				const frontText5 = this.settings.mySetting10.replace(/\\n/g, "\n");
+				const postText1 = this.settings.mySetting3.replace(/\\n/g, "\n");
+				const postText2 = this.settings.mySetting5.replace(/\\n/g, "\n");
+				const postText3 = this.settings.mySetting7.replace(/\\n/g, "\n");
+				const postText4 = this.settings.mySetting9.replace(/\\n/g, "\n");
+				const postText5 = this.settings.mySetting11.replace(/\\n/g, "\n");
 				
 				// get lines
 				const fileContent = await this.app.vault.read(activeFile);
@@ -72,17 +88,6 @@ export default class OutlineConverter extends Plugin {
 				}
 				console.log(`ignore frontmatter:${ignoreUntilIndex}`);
 
-				// get values from settings
-				let frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
-				let postText1 = this.settings.mySetting3.replace(/\\n/g, "\n");
-				let frontText2 = this.settings.mySetting4.replace(/\\n/g, "\n");
-				let postText2 = this.settings.mySetting5.replace(/\\n/g, "\n");
-				let frontText3 = this.settings.mySetting6.replace(/\\n/g, "\n");
-				let postText3 = this.settings.mySetting7.replace(/\\n/g, "\n");
-				let frontText4 = this.settings.mySetting8.replace(/\\n/g, "\n");
-				let postText4 = this.settings.mySetting9.replace(/\\n/g, "\n");
-				let frontText5 = this.settings.mySetting10.replace(/\\n/g, "\n");
-				let postText5 = this.settings.mySetting11.replace(/\\n/g, "\n");
 
 				// treat each line 
 				let result: string[] = [];
@@ -137,7 +142,7 @@ export default class OutlineConverter extends Plugin {
 				// determine the values above
 				for (let index = 0; index < lines.length; index++) {
     				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.mySetting1}`.trim()) {
+    				if (line === `# ${this.settings.sectionName}`.trim()) {
         				startLine = index + 1 ;
     				} else if (line.startsWith(`# `) && startLine && !endLine) {
         				endLine = index - 1;
@@ -247,7 +252,7 @@ export default class OutlineConverter extends Plugin {
 				// determine the values above
 				for (let index = 0; index < lines.length; index++) {
     				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.mySetting1}`.trim()) {
+    				if (line === `# ${this.settings.sectionName}`.trim()) {
         				startLine = index + 1 ;
     				} else if (line.startsWith(`# `) && startLine && !endLine) {
         				endLine = index - 1;
@@ -357,7 +362,7 @@ export default class OutlineConverter extends Plugin {
 				// determine the values above
 				for (let index = 0; index < lines.length; index++) {
     				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.mySetting1}`.trim()) {
+    				if (line === `# ${this.settings.sectionName}`.trim()) {
         				startLine = index + 1 ;
     				} else if (line.startsWith(`# `) && startLine && !endLine) {
         				endLine = index - 1;
@@ -415,9 +420,9 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 			// .setDesc('')
 			.addText(text => text
 				.setPlaceholder('Enter a name')
-				.setValue(this.plugin.settings.mySetting1)
+				.setValue(this.plugin.settings.sectionName)
 				.onChange(async (value) => {
-					this.plugin.settings.mySetting1 = value;
+					this.plugin.settings.sectionName = value;
 					await this.plugin.saveSettings();
 				}));
 		new Setting(containerEl)
