@@ -381,7 +381,7 @@ export default class OutlineConverter extends Plugin {
 		});
 
 		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new OutlineConverterSettingTab(this.app, this));
 	}
 
 	onunload() {
@@ -397,10 +397,10 @@ export default class OutlineConverter extends Plugin {
 	}
 }
 
-class SampleSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+class OutlineConverterSettingTab extends PluginSettingTab {
+	plugin: OutlineConverter;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: OutlineConverter) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}
