@@ -1,8 +1,6 @@
 import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
-// Remember to rename these classes and interfaces!
-
-interface MyPluginSettings {
+interface OutlineConverterSettings {
 	mySetting1: string;
 	mySetting2: string;
 	mySetting3: string;
@@ -21,7 +19,7 @@ interface MyPluginSettings {
 	myCheckboxSetting5: boolean;
 }
 
-const DEFAULT_SETTINGS: MyPluginSettings = {
+const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	mySetting1: 'Output',
 	mySetting2: '\\n\\n## ', //indent level 1
 	mySetting3: '',
@@ -40,8 +38,8 @@ const DEFAULT_SETTINGS: MyPluginSettings = {
 	myCheckboxSetting5: false,
 }
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class OutlineConverter extends Plugin {
+	settings: OutlineConverterSettings;
 
 	async onload() {
 		await this.loadSettings();
