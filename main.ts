@@ -1,4 +1,4 @@
-import { App, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface OutlineConverterSettings {
 	sectionName: string;
@@ -44,15 +44,52 @@ export default class OutlineConverter extends Plugin {
 	async onload() {
 		await this.loadSettings();
 		
-		// transform each indentation level method
-		
+		// transform content to lines
+
+		//　funstion: output to the section
+		function outputToSection(
+			editor: Editor,
+			lines: string[],
+			sectionName: string,
+			finalResult: string
+		  ): void {
+
+				let startLine = null;
+				let endLine = null;
+				let endCh = null;
+
+				// determine the values above
+				for (let index = 0; index < lines.length; index++) {
+    				const line = lines[index].trim(); // trim each line
+    				if (line === `# ${sectionName}`.trim()) {
+        				startLine = index + 1 ;
+    				} else if (line.startsWith(`# `) && startLine && !endLine) {
+        				endLine = index - 1;
+        				endCh = lines[endLine].length;
+        			break; 
+    				}		
+				}
+				if (startLine && !endLine) {
+    				endLine = lines.length - 1; // adjust index
+    				endCh = lines[endLine].length;
+				}
+				console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
+
+				// output the result
+				if (startLine && endLine && endCh !== null) {
+    				editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
+    				editor.setCursor(startLine, 0) 
+				}
+
+		}
+
 		// adjust result text to pandoc style method
 		
 		// custom command
 		this.addCommand({
 			id: 'outline-converter1',
 			name: 'Custom converter',
-			callback: async() => {
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				
 				// return if no active file
 				const activeFile = this.app.workspace.getActiveFile();
@@ -60,7 +97,7 @@ export default class OutlineConverter extends Plugin {
 					new Notice('No active file.');
 					return;
 				}
-
+				
 				// convert line break
 				const frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
 				const frontText2 = this.settings.mySetting4.replace(/\\n/g, "\n");
@@ -134,34 +171,8 @@ export default class OutlineConverter extends Plugin {
 				// copy the result to clipboard
 				navigator.clipboard.writeText(finalResult);
 				
-				// output the result to a section
-				let startLine = null;
-				let endLine = null;
-				let endCh = null;
-
-				// determine the values above
-				for (let index = 0; index < lines.length; index++) {
-    				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.sectionName}`.trim()) {
-        				startLine = index + 1 ;
-    				} else if (line.startsWith(`# `) && startLine && !endLine) {
-        				endLine = index - 1;
-        				endCh = lines[endLine].length;
-        			break; 
-    				}		
-				}
-				if (startLine && !endLine) {
-    				endLine = lines.length - 1; // adjust index
-    				endCh = lines[endLine].length;
-				}
-				console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
-
-				// output the result
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (startLine && endLine && endCh !== null && markdownView) {
-    				markdownView.editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
-    				markdownView.editor.setCursor(startLine, 0) 
-				}
+				// output
+				outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
@@ -169,7 +180,7 @@ export default class OutlineConverter extends Plugin {
 		this.addCommand({
 			id: 'outline-converter2',
 			name: 'Section, Paragraph, Content, Reference',
-			callback: async() => {
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// return if no active file
 				const activeFile = this.app.workspace.getActiveFile();
@@ -244,34 +255,8 @@ export default class OutlineConverter extends Plugin {
 				// copy the result to clipboard
 				navigator.clipboard.writeText(finalResult);
 				
-				// output the result to a section
-				let startLine = null;
-				let endLine = null;
-				let endCh = null;
-
-				// determine the values above
-				for (let index = 0; index < lines.length; index++) {
-    				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.sectionName}`.trim()) {
-        				startLine = index + 1 ;
-    				} else if (line.startsWith(`# `) && startLine && !endLine) {
-        				endLine = index - 1;
-        				endCh = lines[endLine].length;
-        			break; 
-    				}		
-				}
-				if (startLine && !endLine) {
-    				endLine = lines.length - 1; // adjust index
-    				endCh = lines[endLine].length;
-				}
-				console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
-
-				// output the result
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (startLine && endLine && endCh !== null && markdownView) {
-    				markdownView.editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
-    				markdownView.editor.setCursor(startLine, 0) 
-				}
+				// output
+				outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
@@ -279,7 +264,7 @@ export default class OutlineConverter extends Plugin {
 		this.addCommand({
 			id: 'outline-converter3',
 			name: 'Section, Paragraph, Skip, Content, Reference',
-			callback: async() => {
+			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// return if no active file
 				const activeFile = this.app.workspace.getActiveFile();
@@ -354,34 +339,8 @@ export default class OutlineConverter extends Plugin {
 				// copy the result to clipboard
 				navigator.clipboard.writeText(finalResult);
 				
-				// output the result to a section
-				let startLine = null;
-				let endLine = null;
-				let endCh = null;
-
-				// determine the values above
-				for (let index = 0; index < lines.length; index++) {
-    				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${this.settings.sectionName}`.trim()) {
-        				startLine = index + 1 ;
-    				} else if (line.startsWith(`# `) && startLine && !endLine) {
-        				endLine = index - 1;
-        				endCh = lines[endLine].length;
-        			break; 
-    				}		
-				}
-				if (startLine && !endLine) {
-    				endLine = lines.length - 1; // adjust index
-    				endCh = lines[endLine].length;
-				}
-				console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
-
-				// output the result
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (startLine && endLine && endCh !== null && markdownView) {
-    				markdownView.editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
-    				markdownView.editor.setCursor(startLine, 0) 
-				}
+				// output
+				outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
