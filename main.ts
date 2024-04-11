@@ -139,69 +139,17 @@ export default class OutlineConverter extends Plugin {
 				// get lines
 				const lines = await this.splitContent()
 				
-				const tabSize = 4;
-
-				// ignore frontmatter index
-				let ignoreUntilIndex = 0;
-				for (let i = 0; i < lines.length; i++) {
-					if (lines[i].startsWith('---') && i !== 0) {
-						ignoreUntilIndex = i + 1;
-						break;
-					}
-				}
-				console.log(`ignore frontmatter:${ignoreUntilIndex}`);
-
-				// treat each line 
-				let result: string[] = [];
-				for (let i = 0; i < lines.length; i++) {
-					if (i < ignoreUntilIndex) continue;
-
-					// difine match rule
-					let line = lines[i];
-					let level = 0;
-					const matchTabs = line.match(/^(\t*)- /);
-					const matchSpaces = line.match(/^( *)- /);
-
-					// search indent level
-					if (matchTabs) {
-						level = matchTabs[1].length + 1;
-					  } else if (matchSpaces) {
-						const leadingSpaces = matchSpaces[1].length;
-						level = Math.ceil(leadingSpaces / (tabSize)) + 1;
-					  }
-					console.log(`${level}`);
-
-					// transform each level
-					if (level == 1) {
-						const text = line.trim().slice(2);
-						result.push(`\n\n${text}`);
-					} else if (level == 2) {
-						result.push(`\n\n`);
-					} else if (level == 3) {
-						const text = line.trim().slice(2);
-						result.push(`${text} `);
-					} else if (level == 4) {
-						const pattern = /\[\[@(.*?)(\||\]\])/ ;
-						let match = line.match(pattern);
-						if (match) {
-							const text = `[@${match[1]}]`;
-							result.push(text); 
-						}
-					}
-				};
-
-				// connect transformed lines
-				const intermediateResult = result.join("").slice(1);
-				console.log(`${intermediateResult}`);
+				// transform & connect
+				let result = this.transformLines(lines, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc)
 				
 				// adjust pandoc style
-				const finalResult = this.adjustPandoc(intermediateResult);
+				result = this.adjustPandoc(result);
 
 				// copy the result to clipboard
-				navigator.clipboard.writeText(finalResult);
+				navigator.clipboard.writeText(result);
 				
 				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, result);
 			}
 		});
 
@@ -214,69 +162,17 @@ export default class OutlineConverter extends Plugin {
 				// get lines
 				const lines = await this.splitContent()
 				
-				const tabSize = 4;
-
-				// ignore frontmatter index
-				let ignoreUntilIndex = 0;
-				for (let i = 0; i < lines.length; i++) {
-					if (lines[i].startsWith('---') && i !== 0) {
-						ignoreUntilIndex = i + 1;
-						break;
-					}
-				}
-				console.log(`ignore frontmatter:${ignoreUntilIndex}`);
-
-				// treat each line 
-				let result: string[] = [];
-				for (let i = 0; i < lines.length; i++) {
-					if (i < ignoreUntilIndex) continue;
-
-					// difine match rule
-					let line = lines[i];
-					let level = 0;
-					const matchTabs = line.match(/^(\t*)- /);
-					const matchSpaces = line.match(/^( *)- /);
-
-					// search indent level
-					if (matchTabs) {
-						level = matchTabs[1].length + 1;
-					  } else if (matchSpaces) {
-						const leadingSpaces = matchSpaces[1].length;
-						level = Math.ceil(leadingSpaces / (tabSize)) + 1;
-					  }
-					console.log(`${level}`);
-
-					// transform each level
-					if (level == 1) {
-						const text = line.trim().slice(2);
-						result.push(`\n\n${text}`);
-					} else if (level == 2) {
-						result.push(`\n\n`);
-					} else if (level == 4) {
-						const text = line.trim().slice(2);
-						result.push(`${text} `);
-					} else if (level == 5) {
-						const pattern = /\[\[@(.*?)(\||\]\])/ ;
-						let match = line.match(pattern);
-						if (match) {
-							const text = `[@${match[1]}]`;
-							result.push(text); 
-						}
-					}
-				};
-
-				// connect transformed lines
-				const intermediateResult = result.join("").slice(1);
-				console.log(`${intermediateResult}`);
+				// transform & connect
+				let result = this.transformLines(lines, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc)
 				
 				// adjust pandoc style
-				const finalResult = this.adjustPandoc(intermediateResult);
+				result = this.adjustPandoc(result);
 
 				// copy the result to clipboard
-				navigator.clipboard.writeText(finalResult);
+				navigator.clipboard.writeText(result);
 				
 				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, result);
 			}
 		});
 
@@ -306,6 +202,82 @@ export default class OutlineConverter extends Plugin {
 		const fileContent = await this.app.vault.read(activeFile);
 		const lines = fileContent.split(/\r?\n/);
 		return lines;
+	}
+
+	// transform each indentation level
+	transformLines(lines: string[], ...methods: ((line: string) => string)[]){
+		
+		const tabSize = 4;
+
+		// ignore frontmatter index
+		let ignoreUntilIndex = 0;
+		for (let i = 0; i < lines.length; i++) {
+			if (!lines[i].startsWith('---') && i == 0) {
+				break;
+			} else if (lines[i].startsWith('---') && i !== 0) {
+				ignoreUntilIndex = i + 1;
+				break;
+			}
+		}
+
+		// treat each line
+		let transformedLines: string[] = [];
+		for (let i = 0; i < lines.length; i++) {
+			if (i < ignoreUntilIndex) continue;
+
+			let line = lines[i];
+
+			// determine intdentation level
+			let level = 0;
+			const matchTabs = line.match(/^(\t*)- /);
+			const matchSpaces = line.match(/^( *)- /);
+			if (matchTabs) {
+				level = matchTabs[1].length + 1;
+			} else if (matchSpaces) {
+				const leadingSpaces = matchSpaces[1].length;
+				level = Math.ceil(leadingSpaces / tabSize) + 1;
+			}
+
+			// extract text
+			line = line.trim().slice(2);
+
+			// apply methods
+			if (level > 0 && level <= methods.length) {
+				transformedLines.push(methods[level - 1](line));
+			} 
+		};
+
+		const connectedResult = transformedLines.join("");
+		return connectedResult;
+	}
+
+	headerLevel2(line: string): string{
+		const transformedLine =  `\n\n## ` + line; 
+		return transformedLine;
+	}
+
+	doubleLinebreak(line: string): string{
+		const transformedLine =  `\n\n`; 
+		return transformedLine;
+	}
+
+	addSpace(line: string): string{
+		const transformedLine = line + ` `; 
+		return transformedLine;
+	}
+
+	extractPandoc(line: string): string{
+		const pattern = /\[\[@(.*?)(\||\]\])/ ;
+		let match = line.match(pattern);
+		let transformedLine: string = "";
+		if (match) {
+			transformedLine = `[@${match[1]}]`;
+		}
+		return transformedLine; 
+	}
+
+	ignoreLine(line: string): string{
+		return "";
 	}
 
 	// adjust pandoc style
