@@ -2,40 +2,24 @@ import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } 
 
 interface OutlineConverterSettings {
 	sectionName: string;
-	mySetting2: string;
-	mySetting3: string;
-	mySetting4: string;
-	mySetting5: string;
-	mySetting6: string;
-	mySetting7: string;
-	mySetting8: string;
-	mySetting9: string;
-	mySetting10: string;
-	mySetting11: string;
-	myCheckboxSetting1: boolean;
-	myCheckboxSetting2: boolean;
-	myCheckboxSetting3: boolean;
-	myCheckboxSetting4: boolean;
-	myCheckboxSetting5: boolean;
+	currentLevel: number;
+	[key: `beforeText${string}`]: string; 
+	[key: `afterText${string}`]: string; 
+	[key: `ignoreText${string}`]: boolean; 
 }
 
 const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	sectionName: 'Output',
-	mySetting2: '\\n\\n## ', //indent level 1
-	mySetting3: '',
-	mySetting4: '\\n\\n### ', // 2
-	mySetting5: '\\n\\n',
-	mySetting6: '', // 3
-	mySetting7: ' ',
-	mySetting8: '', // 4
-	mySetting9: ' ',
-	mySetting10: '', //5
-	mySetting11: ' ',
-	myCheckboxSetting1: false,
-	myCheckboxSetting2: false,
-	myCheckboxSetting3: false,
-	myCheckboxSetting4: false,
-	myCheckboxSetting5: false,
+	currentLevel: 3,
+	ignoreText1: false,
+	beforeText1: "\\n\\n## ",
+	afterText1: "",
+	ignoreText2: false,
+	beforeText2: "\\n\\n### ",
+	afterText2: "\\n\\n",
+	ignoreText3: false,
+	beforeText3: "",
+	afterText3: " ",
 }
 
 export default class OutlineConverter extends Plugin {
@@ -51,82 +35,62 @@ export default class OutlineConverter extends Plugin {
 			id: 'outline-converter1',
 			name: 'Custom converter',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
-				
+
 				// get lines
 				const lines = await this.splitContent()
 				
-				// convert line break
-				const frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
-				const frontText2 = this.settings.mySetting4.replace(/\\n/g, "\n");
-				const frontText3 = this.settings.mySetting6.replace(/\\n/g, "\n");
-				const frontText4 = this.settings.mySetting8.replace(/\\n/g, "\n");
-				const frontText5 = this.settings.mySetting10.replace(/\\n/g, "\n");
-				const postText1 = this.settings.mySetting3.replace(/\\n/g, "\n");
-				const postText2 = this.settings.mySetting5.replace(/\\n/g, "\n");
-				const postText3 = this.settings.mySetting7.replace(/\\n/g, "\n");
-				const postText4 = this.settings.mySetting9.replace(/\\n/g, "\n");
-				const postText5 = this.settings.mySetting11.replace(/\\n/g, "\n");
-				
-				const tabSize = 4;
-
-				// ignore frontmatter index
-				let ignoreUntilIndex = 0;
-				for (let i = 0; i < lines.length; i++) {
-					if (lines[i].startsWith('---') && i !== 0) {
-						ignoreUntilIndex = i + 1;
-						break;
+				const customizeLine1 = (line: string): string => {
+					if (this.settings.currentLevel < 1) {
+						return "";
+					} else if (this.settings.ignoreText1 == true){
+						return this.settings.beforeText1 + this.settings.afterText1;
 					}
-				}
-				console.log(`ignore frontmatter:${ignoreUntilIndex}`);
-
-
-				// treat each line 
-				let result: string[] = [];
-				for (let i = 0; i < lines.length; i++) {
-					if (i < ignoreUntilIndex) continue;
-
-					// difine match rule
-					let line = lines[i];
-					let level = 0;
-					const matchTabs = line.match(/^(\t*)- /);
-					const matchSpaces = line.match(/^( *)- /);
-
-					// search indent level
-					if (matchTabs) {
-						level = matchTabs[1].length + 1;
-					  } else if (matchSpaces) {
-						const leadingSpaces = matchSpaces[1].length;
-						level = Math.ceil(leadingSpaces / (tabSize)) + 1;
-					  }
-					console.log(`${level}`);
-
-					// transform each level
-					if (level == 1) {
-						const text = this.settings.myCheckboxSetting1 ? '' : line.trim().slice(2);
-						result.push(`${frontText1}${text}${postText1}`);
-					} else if (level == 2) {
-						const text = this.settings.myCheckboxSetting2 ? '' : line.trim().slice(2);
-						result.push(`${frontText2}${text}${postText2}`);
-					} else if (level == 3) {
-						const text = this.settings.myCheckboxSetting3 ? '' : line.trim().slice(2);
-						result.push(`${frontText3}${text}${postText3}`);
-					} else if (level == 4) {
-						const text = this.settings.myCheckboxSetting4 ? '' : line.trim().slice(2);
-						result.push(`${frontText4}${text}${postText4}`);
-					} else if (level == 5) {
-						const text = this.settings.myCheckboxSetting5 ? '' : line.trim().slice(2);
-						result.push(`${frontText5}${text}${postText5}`);
+					return this.settings.beforeText1 + line + this.settings.afterText1;
+				};
+				const customizeLine2 = (line: string): string => {
+					if (this.settings.currentLevel < 2) {
+						return "";
+					} else if (this.settings.ignoreText2 == true){
+						return this.settings.beforeText2 + this.settings.afterText2;
 					}
+					return this.settings.beforeText2 + line + this.settings.afterText2;
+				};
+				const customizeLine3 = (line: string): string => {
+					if (this.settings.currentLevel < 3) {
+						return "";
+					} else if (this.settings.ignoreText3 == true){
+						return this.settings.beforeText3 + this.settings.afterText3;
+					}
+					return this.settings.beforeText3 + line + this.settings.afterText3;
+				};
+				const customizeLine4 = (line: string): string => {
+					if (this.settings.currentLevel < 4) {
+						return "";
+					} else if (this.settings.ignoreText4 == true){
+						return this.settings.beforeText4 + this.settings.afterText4;
+					}
+					return this.settings.beforeText4 + line + this.settings.afterText4;
+				};
+				const customizeLine5 = (line: string): string => {
+					if (this.settings.currentLevel < 5) {
+						return "";
+					} else if (this.settings.ignoreText5 == true){
+						return this.settings.beforeText5 + this.settings.afterText5;
+					}
+					return this.settings.beforeText5 + line + this.settings.afterText5;
 				};
 
-				// connect transformed lines
-				const finalResult = result.join("");
+				// transform & connect
+				let result = this.transformLines(lines, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5)
+				
+				// transform linebreak
+				result = this.linebreak(result);
 
 				// copy the result to clipboard
-				navigator.clipboard.writeText(finalResult);
+				navigator.clipboard.writeText(result);
 				
 				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, result);
 			}
 		});
 
@@ -286,6 +250,12 @@ export default class OutlineConverter extends Plugin {
 		return adjustedText
 	}
 
+	// \\n→\n
+	linebreak(line: string): string{
+		const transformedLine = line.replace(/\\n/g, "\n"); 
+		return transformedLine;
+	}
+
 	//　funstion: output to the section
 	outputToSection(
 		editor: Editor,
@@ -327,6 +297,8 @@ export default class OutlineConverter extends Plugin {
 
 class OutlineConverterSettingTab extends PluginSettingTab {
 	plugin: OutlineConverter;
+	maxLevel: number = 5;
+	minLevel: number = 1;
 
 	constructor(app: App, plugin: OutlineConverter) {
 		super(app, plugin);
@@ -339,127 +311,78 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Output section name')
-			// .setDesc('')
-			.addText(text => text
-				.setPlaceholder('Enter a name')
-				.setValue(this.plugin.settings.sectionName)
-				.onChange(async (value) => {
-					this.plugin.settings.sectionName = value;
-					await this.plugin.saveSettings();
+		.setName('Output section name')
+		// .setDesc('')
+		.addText(text => text
+			.setPlaceholder('Enter a name')
+			.setValue(this.plugin.settings.sectionName)
+			.onChange(async (value) => {
+				this.plugin.settings.sectionName = value;
+				await this.plugin.saveSettings();
+			}));
+			
+		new Setting(containerEl)
+			.setName('Manage Levels')
+			.setDesc(`Check if Ignore Content. \\n means Line Break.`)
+			.addButton(button => 
+				button.setButtonText('+')
+				.setDisabled(this.plugin.settings.currentLevel >= this.maxLevel)
+				.onClick(async() => {
+					if (this.plugin.settings.currentLevel < this.maxLevel) {
+						this.plugin.settings.currentLevel++;
+						this.initializeLevelSettings(this.plugin.settings.currentLevel);
+						await this.display();
+						await this.plugin.saveSettings();
+					}
+			
+				}))
+			.addButton(button => 
+				button.setButtonText('-')
+				.setDisabled(this.plugin.settings.currentLevel <= this.minLevel)
+				.onClick(async() => {
+					if (this.plugin.settings.currentLevel > this.minLevel) {
+						this.plugin.settings.currentLevel--;
+						await this.display();
+						await this.plugin.saveSettings();
+					}
 				}));
+
+		// display up to current level
+		for (let i = 1; i <= this.plugin.settings.currentLevel; i++) {
+            this.addIndentLevelSetting(i);
+        }
+	}
+
+	addIndentLevelSetting(level: number): void {
+        const containerEl = this.containerEl;
+
 		new Setting(containerEl)
-			.setName('Custom Converter')
-			.setDesc("Check if you want to ignore the text.")
-		new Setting(containerEl)
-			.setName('Indent level 1')
+            .setName(`Indentation level ${level}`)
 			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.myCheckboxSetting1)
+				.setValue(this.plugin.settings[`ignoreText${level}`])
 				.onChange(async (value) => {
-					this.plugin.settings.myCheckboxSetting1 = value;
+					this.plugin.settings[`ignoreText${level}`] = value;
 					await this.plugin.saveSettings();
 				}))	
-			.addText(text => text
-				.setPlaceholder('Insert before text')
-				.setValue(this.plugin.settings.mySetting2)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting2 = value;
-					await this.plugin.saveSettings();
-				}))
-			.addText(text => text
-				.setPlaceholder('Insert after text')
-				.setValue(this.plugin.settings.mySetting3)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting3 = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Indent level 2')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.myCheckboxSetting2)
-				.onChange(async (value) => {
-					this.plugin.settings.myCheckboxSetting2 = value;
-					await this.plugin.saveSettings();
-				}))	
-			.addText(text => text
-				.setPlaceholder('Insert before text')
-				.setValue(this.plugin.settings.mySetting4)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting4 = value;
-					await this.plugin.saveSettings();
-				}))
-			.addText(text => text
-				.setPlaceholder('Insert after text')
-				.setValue(this.plugin.settings.mySetting5)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting5 = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Indent level 3')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.myCheckboxSetting3)
-				.onChange(async (value) => {
-					this.plugin.settings.myCheckboxSetting3 = value;
-					await this.plugin.saveSettings();
-				}))	
-			.addText(text => text
-				.setPlaceholder('Insert before text')
-				.setValue(this.plugin.settings.mySetting6)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting6 = value;
-					await this.plugin.saveSettings();
-				}))
-			.addText(text => text
-				.setPlaceholder('Insert After text')
-				.setValue(this.plugin.settings.mySetting7)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting7 = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Indent level 4')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.myCheckboxSetting4)
-				.onChange(async (value) => {
-					this.plugin.settings.myCheckboxSetting4 = value;
-					await this.plugin.saveSettings();
-				}))	
-			.addText(text => text
-				.setPlaceholder('Insert before text')
-				.setValue(this.plugin.settings.mySetting8)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting8 = value;
-					await this.plugin.saveSettings();
-				}))
-			.addText(text => text
-				.setPlaceholder('Insert after text')
-				.setValue(this.plugin.settings.mySetting9)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting9 = value;
-					await this.plugin.saveSettings();
-				}));
-		new Setting(containerEl)
-			.setName('Indent level 5')
-			.addToggle(toggle => toggle
-				.setValue(this.plugin.settings.myCheckboxSetting5)
-				.onChange(async (value) => {
-					this.plugin.settings.myCheckboxSetting5 = value;
-					await this.plugin.saveSettings();
-				}))	
-			.addText(text => text
-				.setPlaceholder('Insert before text')
-				.setValue(this.plugin.settings.mySetting10)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting10 = value;
-					await this.plugin.saveSettings();
-				}))
-			.addText(text => text
-				.setPlaceholder('Insert after text')
-				.setValue(this.plugin.settings.mySetting11)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting11 = value;
-					await this.plugin.saveSettings();
-				}));
+            .addText(text => text
+                .setPlaceholder('Insert before text')
+                .setValue(this.plugin.settings[`beforeText${level}`])
+                .onChange(async (value) => {
+                    this.plugin.settings[`beforeText${level}`] = value;
+                    await this.plugin.saveSettings();
+                }))
+            .addText(text => text
+                .setPlaceholder('Insert after text')
+                .setValue(this.plugin.settings[`afterText${level}`])
+                .onChange(async (value) => {
+                    this.plugin.settings[`afterText${level}`] = value;
+                    await this.plugin.saveSettings();
+                }));
+	}
+
+	initializeLevelSettings(level: number): void {
+		this.plugin.settings[`ignoreText${level}`] = false;
+		this.plugin.settings[`beforeText${level}`] = '';
+		this.plugin.settings[`afterText${level}`] = '';
 	}
 }
