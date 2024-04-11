@@ -43,55 +43,6 @@ export default class OutlineConverter extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-		
-		// transform content to lines
-		async function splitContent() {
-			const activeFile = this.app.workspace.getActiveFile();
-			if (!activeFile) {
-				new Notice('No active file.');
-				return;
-			}
-			const fileContent = await this.app.vault.read(activeFile);
-			const lines = fileContent.split(/\r?\n/);
-			return lines;
-		}		
-
-		//　funstion: output to the section
-		function outputToSection(
-			editor: Editor,
-			lines: string[],
-			sectionName: string,
-			finalResult: string
-		  ): void {
-
-				let startLine = null;
-				let endLine = null;
-				let endCh = null;
-
-				// determine the values above
-				for (let index = 0; index < lines.length; index++) {
-    				const line = lines[index].trim(); // trim each line
-    				if (line === `# ${sectionName}`.trim()) {
-        				startLine = index + 1 ;
-    				} else if (line.startsWith(`# `) && startLine && !endLine) {
-        				endLine = index - 1;
-        				endCh = lines[endLine].length;
-        			break; 
-    				}		
-				}
-				if (startLine && !endLine) {
-    				endLine = lines.length - 1; // adjust index
-    				endCh = lines[endLine].length;
-				}
-				console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
-
-				// output the result
-				if (startLine && endLine && endCh !== null) {
-    				editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
-    				editor.setCursor(startLine, 0) 
-				}
-
-		}
 
 		// adjust result text to pandoc style method
 		
@@ -102,7 +53,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 				
 				// get lines
-				const lines = await splitContent.call(this);
+				const lines = await this.splitContent()
 				
 				// convert line break
 				const frontText1 = this.settings.mySetting2.replace(/\\n/g, "\n");
@@ -175,7 +126,7 @@ export default class OutlineConverter extends Plugin {
 				navigator.clipboard.writeText(finalResult);
 				
 				// output
-				outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
@@ -186,7 +137,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await splitContent.call(this);
+				const lines = await this.splitContent()
 				
 				const tabSize = 4;
 
@@ -252,7 +203,7 @@ export default class OutlineConverter extends Plugin {
 				navigator.clipboard.writeText(finalResult);
 				
 				// output
-				outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
@@ -263,7 +214,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await splitContent.call(this);
+				const lines = await this.splitContent()
 				
 				const tabSize = 4;
 
@@ -329,7 +280,7 @@ export default class OutlineConverter extends Plugin {
 				navigator.clipboard.writeText(finalResult);
 				
 				// output
-				outputToSection(editor, lines, this.settings.sectionName, finalResult);
+				this.outputToSection(editor, lines, this.settings.sectionName, finalResult);
 			}
 		});
 
@@ -348,6 +299,56 @@ export default class OutlineConverter extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 	}
+
+	// transform content to lines
+	async splitContent() {
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			new Notice('No active file.');
+			return [];
+		}
+		const fileContent = await this.app.vault.read(activeFile);
+		const lines = fileContent.split(/\r?\n/);
+		return lines;
+	}
+
+	//　funstion: output to the section
+	outputToSection(
+		editor: Editor,
+		lines: string[],
+		sectionName: string,
+		finalResult: string
+	  ): void {
+
+			let startLine = null;
+			let endLine = null;
+			let endCh = null;
+
+			// determine the values above
+			for (let index = 0; index < lines.length; index++) {
+				const line = lines[index].trim(); // trim each line
+				if (line === `# ${sectionName}`.trim()) {
+					startLine = index + 1 ;
+				} else if (line.startsWith(`# `) && startLine && !endLine) {
+					endLine = index - 1;
+					endCh = lines[endLine].length;
+				break; 
+				}		
+			}
+			if (startLine && !endLine) {
+				endLine = lines.length - 1; // adjust index
+				endCh = lines[endLine].length;
+			}
+			console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
+
+			// output the result
+			if (startLine && endLine && endCh !== null) {
+				editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
+				editor.setCursor(startLine, 0) 
+			}
+
+	}
+
 }
 
 class OutlineConverterSettingTab extends PluginSettingTab {
