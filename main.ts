@@ -312,7 +312,6 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Output section name')
-		// .setDesc('')
 		.addText(text => text
 			.setPlaceholder('Enter a name')
 			.setValue(this.plugin.settings.sectionName)
@@ -322,8 +321,13 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 			}));
 			
 		new Setting(containerEl)
-			.setName('Manage Levels')
-			.setDesc(`Check if Ignore Content. \\n means Line Break.`)
+			.setName('Custom Comverter')
+			.setDesc(
+				`Check if you want to ignore content.
+				Set text you want to insert.
+				\\n means linebreak.
+				`
+			)
 			.addButton(button => 
 				button.setButtonText('+')
 				.setDisabled(this.plugin.settings.currentLevel >= this.maxLevel)
@@ -365,14 +369,14 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}))	
             .addText(text => text
-                .setPlaceholder('Insert before text')
+                .setPlaceholder('Insert Before Text')
                 .setValue(this.plugin.settings[`beforeText${level}`])
                 .onChange(async (value) => {
                     this.plugin.settings[`beforeText${level}`] = value;
                     await this.plugin.saveSettings();
                 }))
             .addText(text => text
-                .setPlaceholder('Insert after text')
+                .setPlaceholder('Insert After Text')
                 .setValue(this.plugin.settings[`afterText${level}`])
                 .onChange(async (value) => {
                     this.plugin.settings[`afterText${level}`] = value;
