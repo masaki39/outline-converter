@@ -195,9 +195,7 @@ export default class OutlineConverter extends Plugin {
 				console.log(`${intermediateResult}`);
 				
 				// adjust pandoc style
-				let finalResult = intermediateResult
-					.replace(/\]\[\@/g, ';@')
-					.replace(/(\.)\s*(\[@.*?\])/g, '$2$1 ');
+				const finalResult = this.adjustPandoc(intermediateResult);
 
 				// copy the result to clipboard
 				navigator.clipboard.writeText(finalResult);
@@ -272,9 +270,7 @@ export default class OutlineConverter extends Plugin {
 				console.log(`${intermediateResult}`);
 				
 				// adjust pandoc style
-				let finalResult = intermediateResult
-					.replace(/\]\[\@/g, ';@')
-					.replace(/(\.)\s*(\[@.*?\])/g, '$2$1 ');
+				const finalResult = this.adjustPandoc(intermediateResult);
 
 				// copy the result to clipboard
 				navigator.clipboard.writeText(finalResult);
@@ -310,6 +306,12 @@ export default class OutlineConverter extends Plugin {
 		const fileContent = await this.app.vault.read(activeFile);
 		const lines = fileContent.split(/\r?\n/);
 		return lines;
+	}
+
+	// adjust pandoc style
+	adjustPandoc(text: string,): string {
+		const adjustedText = text.replace(/\]\[\@/g, ';@').replace(/(\.)\s*(\[@.*?\])/g, '$2$1 ');
+		return adjustedText
 	}
 
 	//　funstion: output to the section
