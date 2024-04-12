@@ -32,7 +32,7 @@ export default class OutlineConverter extends Plugin {
 		
 		// custom command
 		this.addCommand({
-			id: 'outline-converter1',
+			id: 'custom-convert',
 			name: 'Custom converter',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
@@ -99,7 +99,7 @@ export default class OutlineConverter extends Plugin {
 
 		// preset1
 		this.addCommand({
-			id: 'outline-converter2',
+			id: 'convert-type1',
 			name: 'Section, Paragraph, Content, Reference',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
@@ -125,7 +125,7 @@ export default class OutlineConverter extends Plugin {
 
 		// preset2
 		this.addCommand({
-			id: 'outline-converter3',
+			id: 'convert-type2',
 			name: 'Section, Paragraph, Skip, Content, Reference',
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
@@ -151,8 +151,8 @@ export default class OutlineConverter extends Plugin {
 
 		// fold indentation level 1 command
 		this.addCommand({
-			id: 'outline-converter:fold1',
-			name: 'Fold All of Indentation Level 1',
+			id: 'fold-level1',
+			name: 'Fold all of indentation level 1',
 			editorCallback: async (editor: Editor) => {
 
 				// unfold all
@@ -176,8 +176,8 @@ export default class OutlineConverter extends Plugin {
 
 		// fold indentation level 2 command
 		this.addCommand({
-			id: 'outline-converter:fold2',
-			name: 'Fold All of Indentation Level 2',
+			id: 'fold-level2',
+			name: 'Fold all of indentation level 2',
 			editorCallback: async (editor: Editor) => {
 
 				// unfold all
@@ -201,8 +201,8 @@ export default class OutlineConverter extends Plugin {
 
 		// fold indentation level 3 command
 		this.addCommand({
-			id: 'outline-converter:fold3',
-			name: 'Fold All of Indentation Level 3',
+			id: 'fold-level3',
+			name: 'Fold all of indentation level 3',
 			editorCallback: async (editor: Editor) => {
 
 				// unfold all
@@ -423,7 +423,7 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 			}));
 			
 		new Setting(containerEl)
-			.setName('Custom Comverter')
+			.setName('Custom comverter')
 			.setDesc(
 				`Check if you want to ignore content.
 				Set text you want to insert.

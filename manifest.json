@@ -4,7 +4,7 @@
 	"version": "1.0.4",
 	"minAppVersion": "1.5.12",
 	"description": "Convert outline to continuous text.",
-	"author": "Obsidian",
+	"author": "masaki39",
 	"authorUrl": "https://github.com/masaki39",
 	"isDesktopOnly": true
 }
