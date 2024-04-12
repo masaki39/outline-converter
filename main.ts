@@ -84,7 +84,7 @@ export default class OutlineConverter extends Plugin {
 				};
 
 				// transform & connect
-				let result = this.transformLines(lines, indentLevels, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5)
+				let result = this.transformLines(lines, indentLevels, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5);
 				
 				// transform linebreak
 				result = this.linebreak(result);
@@ -110,7 +110,7 @@ export default class OutlineConverter extends Plugin {
 				let indentLevels = this.calculateIndentLevels(lines);
 				
 				// transform & connect
-				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc)
+				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc);
 				
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
@@ -136,7 +136,7 @@ export default class OutlineConverter extends Plugin {
 				let indentLevels = this.calculateIndentLevels(lines);
 
 				// transform & connect
-				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc)
+				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc);
 				
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
