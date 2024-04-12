@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor,  EditorPosition,  MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface OutlineConverterSettings {
 	sectionName: string;
@@ -37,7 +37,10 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent()
+				const lines = await this.splitContent();
+
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
 				
 				const customizeLine1 = (line: string): string => {
 					if (this.settings.currentLevel < 1) {
@@ -81,7 +84,7 @@ export default class OutlineConverter extends Plugin {
 				};
 
 				// transform & connect
-				let result = this.transformLines(lines, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5)
+				let result = this.transformLines(lines, indentLevels, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5)
 				
 				// transform linebreak
 				result = this.linebreak(result);
@@ -101,10 +104,13 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent()
+				const lines = await this.splitContent();
+
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
 				
 				// transform & connect
-				let result = this.transformLines(lines, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc)
+				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc)
 				
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
@@ -124,10 +130,13 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent()
+				const lines = await this.splitContent();
 				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
 				// transform & connect
-				let result = this.transformLines(lines, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc)
+				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc)
 				
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
@@ -137,6 +146,81 @@ export default class OutlineConverter extends Plugin {
 				
 				// output
 				this.outputToSection(editor, lines, this.settings.sectionName, result);
+			}
+		});
+
+		// fold indentation level 1 command
+		this.addCommand({
+			id: 'outline-converter:fold1',
+			name: 'Fold All of Indentation Level 1',
+			editorCallback: async (editor: Editor) => {
+
+				// unfold all
+				editor.exec(`unfoldAll`);
+
+				// get lines
+				const lines = await this.splitContent();
+				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
+				// fold the indentlevel
+				for (let i = 0; i < indentLevels.length; i++) {
+					if (indentLevels[i] === 1) {
+						editor.setCursor(i);
+						editor.exec(`toggleFold`);
+					}
+				}
+			}
+		});
+
+		// fold indentation level 2 command
+		this.addCommand({
+			id: 'outline-converter:fold2',
+			name: 'Fold All of Indentation Level 2',
+			editorCallback: async (editor: Editor) => {
+
+				// unfold all
+				editor.exec(`unfoldAll`);
+
+				// get lines
+				const lines = await this.splitContent();
+				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
+				// fold the indentlevel
+				for (let i = 0; i < indentLevels.length; i++) {
+					if (indentLevels[i] === 2) {
+						editor.setCursor(i);
+						editor.exec(`toggleFold`);
+					}
+				}
+			}
+		});
+
+		// fold indentation level 3 command
+		this.addCommand({
+			id: 'outline-converter:fold3',
+			name: 'Fold All of Indentation Level 3',
+			editorCallback: async (editor: Editor) => {
+
+				// unfold all
+				editor.exec(`unfoldAll`);
+
+				// get lines
+				const lines = await this.splitContent();
+				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
+				// fold the indentlevel
+				for (let i = 0; i < indentLevels.length; i++) {
+					if (indentLevels[i] === 3) {
+						editor.setCursor(i);
+						editor.exec(`toggleFold`);
+					}
+				}
 			}
 		});
 
@@ -168,30 +252,29 @@ export default class OutlineConverter extends Plugin {
 		return lines;
 	}
 
-	// transform each indentation level
-	transformLines(lines: string[], ...methods: ((line: string) => string)[]){
-		
-		const tabSize = 4;
-
-		// ignore frontmatter index
+	// return list of indentlevels from lines
+	calculateIndentLevels(lines: string[], tabSize: number = 4): number[]{
 		let ignoreUntilIndex = 0;
-		for (let i = 0; i < lines.length; i++) {
-			if (!lines[i].startsWith('---') && i == 0) {
+	    let indentLevels: number[] = [];
+
+   	 	// Determine the index to start processing from (ignore frontmatter)
+	    for (let i = 0; i < lines.length; i++) {
+    	    if (!lines[i].startsWith('---') && i == 0) {
 				break;
-			} else if (lines[i].startsWith('---') && i !== 0) {
+      	 	} else if (lines[i].startsWith('---') && i !== 0) {
 				ignoreUntilIndex = i + 1;
 				break;
+       	 	}
+   	 	}
+
+    	// Calculate indent levels
+    	for (let i = 0; i < lines.length; i++) {
+			if (i < ignoreUntilIndex) {
+				indentLevels.push(0);  // Set front matter lines to level 0
+				continue;
 			}
-		}
-
-		// treat each line
-		let transformedLines: string[] = [];
-		for (let i = 0; i < lines.length; i++) {
-			if (i < ignoreUntilIndex) continue;
-
+	
 			let line = lines[i];
-
-			// determine intdentation level
 			let level = 0;
 			const matchTabs = line.match(/^(\t*)- /);
 			const matchSpaces = line.match(/^( *)- /);
@@ -201,19 +284,35 @@ export default class OutlineConverter extends Plugin {
 				const leadingSpaces = matchSpaces[1].length;
 				level = Math.ceil(leadingSpaces / tabSize) + 1;
 			}
+			indentLevels.push(level);
+		}
 
-			// extract text
-			line = line.trim().slice(2);
+    	return indentLevels;
+	}
 
-			// apply methods
+	// transform and connect each indentation level
+	transformLines(lines: string[], indentLevels: number[], ...methods: ((line: string) => string)[]): string {
+		let transformedLines: string[] = [];
+		let indexOffset = lines.length - indentLevels.length;
+	
+		for (let i = 0; i < indentLevels.length; i++) {
+			// Ignore lines such as front matter where indent level might be 0
+			if (indentLevels[i] === 0) continue;
+	
+			let line = lines[i + indexOffset].trim().slice(2);
+			let level = indentLevels[i];
+	
+			// Ensure the method exists for the given level (1-indexed for methods)
 			if (level > 0 && level <= methods.length) {
 				transformedLines.push(methods[level - 1](line));
-			} 
-		};
-
+			}
+		}
+	
 		const connectedResult = transformedLines.join("");
 		return connectedResult;
 	}
+
+	// add methods for line
 
 	headerLevel2(line: string): string{
 		const transformedLine =  `\n\n## ` + line; 
@@ -244,6 +343,8 @@ export default class OutlineConverter extends Plugin {
 		return "";
 	}
 
+	// add replace methods 
+
 	// adjust pandoc style
 	adjustPandoc(text: string,): string {
 		const adjustedText = text.replace(/\]\[\@/g, ';@').replace(/(\.)\s*(\[@.*?\])/g, '$2$1 ');
@@ -255,6 +356,8 @@ export default class OutlineConverter extends Plugin {
 		const transformedLine = line.replace(/\\n/g, "\n"); 
 		return transformedLine;
 	}
+
+	// add output methods
 
 	//　funstion: output to the section
 	outputToSection(
@@ -292,7 +395,6 @@ export default class OutlineConverter extends Plugin {
 			}
 
 	}
-
 }
 
 class OutlineConverterSettingTab extends PluginSettingTab {
