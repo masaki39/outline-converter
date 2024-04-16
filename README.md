@@ -1,20 +1,56 @@
-# Demo
 
-![](https://github.com/masaki39/outline-converter/blob/main/demos/demo1.gif)
-(※Use hotkeys in demo)
-# How to use 
+# Obsidian Outline Converter Plugin
 
-This plugin extracts list rows from the current note. 
-It automatically identifies the indentation level and connects them according to your settings.
+- Obsidian Outline Converter Plugin
+	- Features
+		- This plugin converts bullet list outlines into continuous text.
+		- It includes commands to fold text at indentation levels 1-3.
+		- Preset conversion commands convert `[[@citekey]]` into Pandoc citation style, assuming use with Citations plugins.
+	- Installation
+		- You can download from `Community plugins` in Obsidian settings.
+	- Custom converter
+		- You can choose to convert selected text, or if none is selected, all content in the active note will be accessed.
+		- Customize how text is handled at each indentation level from 1 to 5.
+		- Options include inserting text before or after content, ignoring content, and using line breaks.
+	- Select export method 
+		- Choose from the following options for exporting your text:
+		- Copy to clipboard.
+		- Append to the cursor's current position.
+		- Append to the bottom of the active note.
+		- Replace a section; if none exists, create it at the bottom of the note.
+	- Preset commands
+		- This feature is tailored for academic writing.
+		- It converts outlines to Pandoc citation style, compatible with manuscript submission requirements by subsequent usage of Pandoc plugins
+		- "Section" means h2 header.
+		- "Paragraph" introduces a double line break.
+		- "Skip" ignores an indentation level.
+		- "Content" converts into continuous text.
+		- "Reference" extracts and converts `[[@citekey]]` into Pandoc citation style.
+	- Note
+		- This outline has been converted into the text below.
 
-There are **three commands**.
-The first one executes as configured, while the latter two are designed for academic writing.
+## Obsidian Outline Converter Plugin
 
-If you imported notes named `[[@citekey]]` from Zotero through [Citations](https://github.com/hans/obsidian-citation-plugin) or [Zotero Integration](https://github.com/mgmeyers/obsidian-zotero-integration) or [Zotlit](https://github.com/PKM-er/obsidian-zotlit) plugin, the preset commands automatically convert the links into pandoc citation style. 
+### Features
 
-# Settings
+This plugin converts bullet list outlines into continuous text. It includes commands to fold text at indentation levels 1-3. Preset conversion commands convert `[[@citekey]]` into Pandoc citation style, assuming use with Citations plugins. 
 
-![](https://github.com/masaki39/outline-converter/blob/main/images/image1.png)
+### Installation
 
-You can choose whether the indentation level include or note.
-Add customized text before or after each text.
+You can download from `Community plugins` in Obsidian settings. 
+
+### Custom converter
+
+You can choose to convert selected text, or if none is selected, all content in the active note will be accessed. Customize how text is handled at each indentation level from 1 to 5. Options include inserting text before or after content, ignoring content, and using line breaks. 
+
+### Select export method
+
+Choose from the following options for exporting your text: Copy to clipboard. Append to the cursor's current position. Append to the bottom of the active note. Replace a section; if none exists, create it at the bottom of the note. 
+
+### Preset commands
+
+This feature is tailored for academic writing. It converts outlines to Pandoc citation style, compatible with manuscript submission requirements by subsequent usage of Pandoc plugins "Section" means h2 header. "Paragraph" introduces a double line break. "Skip" ignores an indentation level. "Content" converts into continuous text. "Reference" extracts and converts `[[@citekey]]` into Pandoc citation style. 
+
+### Note
+
+This outline has been converted into the text below. 
