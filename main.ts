@@ -1,6 +1,7 @@
-import { App, Editor,  EditorPosition,  MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface OutlineConverterSettings {
+	exportMethod: string;
 	sectionName: string;
 	currentLevel: number;
 	[key: `beforeText${string}`]: string; 
@@ -9,6 +10,7 @@ interface OutlineConverterSettings {
 }
 
 const DEFAULT_SETTINGS: OutlineConverterSettings = {
+	exportMethod: 'Copy',
 	sectionName: 'Output',
 	currentLevel: 3,
 	ignoreText1: false,
@@ -37,7 +39,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -89,11 +91,16 @@ export default class OutlineConverter extends Plugin {
 				// transform linebreak
 				result = this.linebreak(result);
 
-				// copy the result to clipboard
-				navigator.clipboard.writeText(result);
-				
-				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, result);
+				// export
+				if (this.settings.exportMethod == 'Copy'){
+					this.copyContent(result);
+				} else if (this.settings.exportMethod == 'Cursor'){
+					this.appendCursor(editor, result);
+				} else if (this.settings.exportMethod == 'Bottom'){
+					this.appendBottom(result);
+				} else if (this.settings.exportMethod == 'Section'){
+					this.outputToSection(editor, this.settings.sectionName, result);
+				}
 			}
 		});
 
@@ -104,7 +111,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -115,11 +122,16 @@ export default class OutlineConverter extends Plugin {
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
 
-				// copy the result to clipboard
-				navigator.clipboard.writeText(result);
-				
-				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, result);
+				// export
+				if (this.settings.exportMethod == 'Copy'){
+					this.copyContent(result);
+				} else if (this.settings.exportMethod == 'Cursor'){
+					this.appendCursor(editor, result);
+				} else if (this.settings.exportMethod == 'Bottom'){
+					this.appendBottom(result);
+				} else if (this.settings.exportMethod == 'Section'){
+					this.outputToSection(editor, this.settings.sectionName, result);
+				}
 			}
 		});
 
@@ -130,7 +142,7 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor, view: MarkdownView) => {
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 				
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -141,11 +153,16 @@ export default class OutlineConverter extends Plugin {
 				// adjust pandoc style
 				result = this.adjustPandoc(result);
 
-				// copy the result to clipboard
-				navigator.clipboard.writeText(result);
-				
-				// output
-				this.outputToSection(editor, lines, this.settings.sectionName, result);
+				// export
+				if (this.settings.exportMethod == 'Copy'){
+					this.copyContent(result);
+				} else if (this.settings.exportMethod == 'Cursor'){
+					this.appendCursor(editor, result);
+				} else if (this.settings.exportMethod == 'Bottom'){
+					this.appendBottom(result);
+				} else if (this.settings.exportMethod == 'Section'){
+					this.outputToSection(editor, this.settings.sectionName, result);
+				}
 			}
 		});
 
@@ -159,7 +176,7 @@ export default class OutlineConverter extends Plugin {
 				editor.exec(`unfoldAll`);
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 				
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -184,7 +201,7 @@ export default class OutlineConverter extends Plugin {
 				editor.exec(`unfoldAll`);
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 				
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -209,7 +226,7 @@ export default class OutlineConverter extends Plugin {
 				editor.exec(`unfoldAll`);
 
 				// get lines
-				const lines = await this.splitContent();
+				const lines = await this.splitContent(editor);
 				
 				// get indent levels list
 				let indentLevels = this.calculateIndentLevels(lines);
@@ -241,13 +258,16 @@ export default class OutlineConverter extends Plugin {
 	}
 
 	// transform content to lines
-	async splitContent() {
-		const activeFile = this.app.workspace.getActiveFile();
-		if (!activeFile) {
-			new Notice('No active file.');
-			return [];
+	async splitContent(editor: Editor) {
+		let fileContent = editor.getSelection();
+		if (!fileContent){
+			const activeFile = this.app.workspace.getActiveFile();
+			if (!activeFile) {
+				new Notice('No active file.');
+				return [];
+			}
+			fileContent = await this.app.vault.read(activeFile);
 		}
-		const fileContent = await this.app.vault.read(activeFile);
 		const lines = fileContent.split(/\r?\n/);
 		return lines;
 	}
@@ -359,41 +379,72 @@ export default class OutlineConverter extends Plugin {
 
 	// add output methods
 
-	//　funstion: output to the section
-	outputToSection(
+	// copy content
+	copyContent(result:string){
+		navigator.clipboard.writeText(result);
+	}
+
+	// append content to cursor
+	appendCursor(editor:Editor, result:string){
+		if (editor.getSelection()){
+			editor.replaceSelection(result);
+		} else {
+			editor.replaceRange(result,editor.getCursor());
+		}
+	}
+
+	// append content to note bottom
+	appendBottom(result:string){
+		const activeFile = this.app.workspace.getActiveFile();
+		if(activeFile){
+			this.app.vault.append(activeFile, '\n'+result);
+		}
+	}
+
+	//　function: output to the section
+	async outputToSection(
 		editor: Editor,
-		lines: string[],
 		sectionName: string,
 		finalResult: string
-	  ): void {
+	  ): Promise<void> {
 
-			let startLine = null;
-			let endLine = null;
-			let endCh = null;
+		// get lines
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			return;
+		} 
+		const fileContent = await this.app.vault.read(activeFile);
+		const lines = fileContent.split(/\r?\n/);
 
-			// determine the values above
-			for (let index = 0; index < lines.length; index++) {
-				const line = lines[index].trim(); // trim each line
-				if (line === `# ${sectionName}`.trim()) {
-					startLine = index + 1 ;
-				} else if (line.startsWith(`# `) && startLine && !endLine) {
-					endLine = index - 1;
-					endCh = lines[endLine].length;
-				break; 
-				}		
-			}
-			if (startLine && !endLine) {
-				endLine = lines.length - 1; // adjust index
+		// define values
+		let startLine = null;
+		let endLine = null;
+		let endCh = null;
+
+		// determine the values above
+		for (let index = 0; index < lines.length; index++) {
+			const line = lines[index].trim(); // trim each line
+			if (line === `# ${sectionName}`.trim()) {
+				startLine = index + 1 ;
+			} else if (line.startsWith(`# `) && startLine && !endLine) {
+				endLine = index - 1;
 				endCh = lines[endLine].length;
-			}
-			console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
+			break; 
+			}		
+		}
+		if (startLine && !endLine) {
+			endLine = lines.length - 1; // adjust index
+			endCh = lines[endLine].length;
+		}
+		console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
 
-			// output the result
-			if (startLine && endLine && endCh !== null) {
-				editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
-				editor.setCursor(startLine, 0) 
-			}
-
+		// output the result
+		if (startLine && endLine && endCh !== null) {
+			editor.replaceRange(finalResult, {line: startLine, ch: 0}, {line: endLine, ch: endCh});
+			editor.setCursor(startLine, 0) 
+		} else {
+			this.app.vault.append(activeFile, `\n# ${sectionName}\n`+finalResult);
+		}
 	}
 }
 
@@ -412,16 +463,41 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
+		// export settings
 		new Setting(containerEl)
-		.setName('Output section name')
+		.setName('Select export method')
+		.addDropdown(dropdown => dropdown
+			.addOptions({
+				'Copy': 'Copy content to clipboard',
+				'Cursor':'Append content after the active cursor',
+				'Bottom': 'Append content after the active note',
+				'Section': 'Replace section with content'
+			})
+			.setValue(this.plugin.settings.exportMethod)
+			.onChange(async (value) => {
+				this.plugin.settings.exportMethod = value;
+				await this.plugin.saveSettings();
+				toggleSectionNameInput(value); // toggle on change
+			}));
+		
+		// Section name setting
+		const sectionNameInput = new Setting(containerEl)
+		.setName('Section name')
 		.addText(text => text
-			.setPlaceholder('Enter a name')
-			.setValue(this.plugin.settings.sectionName)
+			.setPlaceholder('Enter Section Name')
+			.setValue(this.plugin.settings.sectionName) 
 			.onChange(async (value) => {
 				this.plugin.settings.sectionName = value;
 				await this.plugin.saveSettings();
 			}));
-			
+		
+		// toggle first
+		toggleSectionNameInput(this.plugin.settings.exportMethod);
+		// define toggle function
+		function toggleSectionNameInput(value: string) {
+			sectionNameInput.settingEl.style.display = value === 'Section' ? '' : 'none';
+		}
+
 		new Setting(containerEl)
 			.setName('Custom comverter')
 			.setDesc(
@@ -456,7 +532,7 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		// display up to current level
 		for (let i = 1; i <= this.plugin.settings.currentLevel; i++) {
             this.addIndentLevelSetting(i);
-        }
+		}
 	}
 
 	addIndentLevelSetting(level: number): void {
@@ -491,4 +567,6 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		this.plugin.settings[`beforeText${level}`] = '';
 		this.plugin.settings[`afterText${level}`] = '';
 	}
+
+
 }

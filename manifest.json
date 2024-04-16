@@ -1,7 +1,7 @@
 {
 	"id": "outline-converter",
 	"name": "Outline Converter",
-	"version": "1.0.5",
+	"version": "1.0.6",
 	"minAppVersion": "1.5.12",
 	"description": "Convert outline to continuous text.",
 	"author": "masaki39",
