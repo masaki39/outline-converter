@@ -1,4 +1,4 @@
-import { App, Editor, MarkdownView, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { App, Editor, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 interface OutlineConverterSettings {
 	exportMethod: string;
@@ -29,14 +29,12 @@ export default class OutlineConverter extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
-
-		// adjust result text to pandoc style method
 		
 		// custom command
 		this.addCommand({
 			id: 'custom-convert',
 			name: 'Custom converter',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor) => {
 
 				// get lines
 				const lines = await this.splitContent(editor);
@@ -108,7 +106,7 @@ export default class OutlineConverter extends Plugin {
 		this.addCommand({
 			id: 'convert-type1',
 			name: 'Section, Paragraph, Content, Reference',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor) => {
 
 				// get lines
 				const lines = await this.splitContent(editor);
@@ -139,7 +137,7 @@ export default class OutlineConverter extends Plugin {
 		this.addCommand({
 			id: 'convert-type2',
 			name: 'Section, Paragraph, Skip, Content, Reference',
-			editorCallback: async (editor: Editor, view: MarkdownView) => {
+			editorCallback: async (editor: Editor) => {
 
 				// get lines
 				const lines = await this.splitContent(editor);
