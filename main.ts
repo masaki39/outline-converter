@@ -263,7 +263,7 @@ export default class OutlineConverter extends Plugin {
 				const lineAbove = editor.getLine(cursor.line - 1);
 
 				if (line.trim().startsWith(`- `) && lineAbove.trim().startsWith(`- `)) {
-					commands.executeCommandById("obsidian-outliner:move-list-item-up");
+					commands.executeCommandById(commandId);
 				} else {
 					editor.exec("swapLineUp");
 				}
@@ -298,7 +298,7 @@ export default class OutlineConverter extends Plugin {
 		
 				// Check if both current line and the line below start with "- "
 				if (line.trim().startsWith(`- `) && lineBelow.trim().startsWith(`- `)) {
-					commands.executeCommandById("obsidian-outliner:move-list-item-down");
+					commands.executeCommandById(commandId);
 				} else {
 					editor.exec("swapLineDown");
 				}
