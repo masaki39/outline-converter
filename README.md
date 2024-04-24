@@ -26,6 +26,10 @@
 		- "Skip" ignores an indentation level.
 		- "Content" converts into continuous text.
 		- "Reference" extracts and converts `[[@citekey]]` into Pandoc citation style.
+	- Swap lines commands
+		- In bullet lists, it uses line swapping commands of the Outliner plugin.
+		- Outside of that, it simply swaps lines.
+		- You cannot use  unless the Outliner plugin is installed.
 	- Note
 		- This outline has been converted into the text below.
 
@@ -50,6 +54,10 @@ Choose from the following options for exporting your text: Copy to clipboard. Ap
 ### Preset commands
 
 This feature is tailored for academic writing. It converts outlines to Pandoc citation style, compatible with manuscript submission requirements by subsequent usage of Pandoc plugins "Section" means h2 header. "Paragraph" introduces a double line break. "Skip" ignores an indentation level. "Content" converts into continuous text. "Reference" extracts and converts `[[@citekey]]` into Pandoc citation style. 
+
+### Swap lines commands
+
+In bullet lists, it uses line swapping commands of the Outliner plugin. Outside of that, it simply swaps lines. You cannot use  unless the Outliner plugin is installed. 
 
 ### Note
 
