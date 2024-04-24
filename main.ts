@@ -239,6 +239,73 @@ export default class OutlineConverter extends Plugin {
 			}
 		});
 
+		this.addCommand({
+			id: 'line-up',
+			name: 'Swap line up',
+			editorCallback: async (editor: Editor) => {
+
+				//check if outliner commands exist
+				const commandId = "obsidian-outliner:move-list-item-up";
+				const commands = (this.app as any).commands;
+				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
+
+				if (!commandExist){
+					new Notice("Install outliner plugin");
+					return;
+				}
+
+				const cursor = editor.getCursor();
+				if (cursor.line == 0) {
+					return;
+				}
+
+				const line = editor.getLine(cursor.line);	
+				const lineAbove = editor.getLine(cursor.line - 1);
+
+				if (line.trim().startsWith(`- `) && lineAbove.trim().startsWith(`- `)) {
+					commands.executeCommandById("obsidian-outliner:move-list-item-up");
+				} else {
+					editor.exec("swapLineUp");
+				}
+				
+			}
+		});
+
+		this.addCommand({
+			id: 'line-down',
+			name: 'Swap line down',
+			editorCallback: async (editor: Editor) => {
+		
+				// Check if outliner commands exist
+				const commandId = "obsidian-outliner:move-list-item-down";
+				const commands = (this.app as any).commands;
+				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
+		
+				if (!commandExist){
+					new Notice("Install outliner plugin");
+					return; 
+				}
+		
+				const cursor = editor.getCursor();
+				const lastLineNumber = editor.lineCount() - 1; // Get the index of the last line
+		
+				if (cursor.line == lastLineNumber) {
+					return; // If cursor is on the last line, there is no line below to swap with
+				}
+		
+				const line = editor.getLine(cursor.line);    
+				const lineBelow = editor.getLine(cursor.line + 1);
+		
+				// Check if both current line and the line below start with "- "
+				if (line.trim().startsWith(`- `) && lineBelow.trim().startsWith(`- `)) {
+					commands.executeCommandById("obsidian-outliner:move-list-item-down");
+				} else {
+					editor.exec("swapLineDown");
+				}
+				
+			}
+		});		
+
 		// This adds a settings tab so the user can configure various aspects of the plugin
 		this.addSettingTab(new OutlineConverterSettingTab(this.app, this));
 	}
