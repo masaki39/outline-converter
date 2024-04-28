@@ -4,15 +4,25 @@ interface OutlineConverterSettings {
 	exportMethod: string;
 	sectionName: string;
 	currentLevel: number;
+	currentReplace: number;
+	startHeader: string;
+	addSpace: boolean;
 	[key: `beforeText${string}`]: string; 
 	[key: `afterText${string}`]: string; 
 	[key: `ignoreText${string}`]: boolean; 
+	[key: `beforeReplace${string}`]: string; 
+	[key: `afterReplace${string}`]: string; 
+	[key: `enableRegex${string}`]: boolean; 
+
 }
 
 const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	exportMethod: 'Copy',
 	sectionName: 'Output',
 	currentLevel: 3,
+	currentReplace: 1,
+	startHeader: 'h2',
+	addSpace: true,
 	ignoreText1: false,
 	beforeText1: "\\n\\n## ",
 	afterText1: "",
@@ -22,6 +32,27 @@ const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	ignoreText3: false,
 	beforeText3: "",
 	afterText3: " ",
+	ignoreText4: false,
+	beforeText4: "",
+	afterText4: "",
+	ignoreText5: false,
+	beforeText5: "",
+	afterText5: "",
+	beforeReplace1: "",
+	afterReplace1: "",
+	enableRegex1: false,
+	beforeReplace2: "",
+	afterReplace2: "",
+	enableRegex2: false,
+	beforeReplace3: "",
+	afterReplace3: "",
+	enableRegex3: false,
+	beforeReplace4: "",
+	afterReplace4: "",
+	enableRegex4: false,
+	beforeReplace5: "",
+	afterReplace5: "",
+	enableRegex5: false
 }
 
 export default class OutlineConverter extends Plugin {
@@ -29,6 +60,56 @@ export default class OutlineConverter extends Plugin {
 
 	async onload() {
 		await this.loadSettings();
+	
+		// auto-header converter
+		this.addCommand({
+			id: 'auto-header',
+			name: 'Auto-header converter',
+			editorCallback: async (editor: Editor) => {
+
+				// get lines
+				const lines = await this.splitContent(editor);
+
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+				
+				// transform & connect
+				let result = this.autoHeader(lines,indentLevels);
+
+				// replacement methods
+				for (let i = 1; i <= 5; i++) {
+					if (this.settings.currentReplace >= i) {
+						if (this.settings[`enableRegex${i}`]) {
+							try {
+								let regex = new RegExp(this.settings[`beforeReplace${i}`], "g");
+								result = result.replace(regex, this.settings[`afterReplace${i}`]);
+							} catch (error) {
+								new Notice("Something wrong with regular expression");
+								return;
+							}
+						} else {
+							let regrex = new RegExp(this.settings[`beforeReplace${i}`].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g"); // escape
+							result = result.replace(regrex, this.settings[`afterReplace${i}`]);
+						}
+						
+					}
+				  }
+
+				// transform linebreak
+				result = result.replace(/\\n/g, "\n");
+
+				// export
+				if (this.settings.exportMethod == 'Copy'){
+					this.copyContent(result);
+				} else if (this.settings.exportMethod == 'Cursor'){
+					this.appendCursor(editor, result);
+				} else if (this.settings.exportMethod == 'Bottom'){
+					this.appendBottom(result);
+				} else if (this.settings.exportMethod == 'Section'){
+					this.outputToSection(editor, this.settings.sectionName, result);
+				}
+			}
+		});
 		
 		// custom command
 		this.addCommand({
@@ -86,70 +167,27 @@ export default class OutlineConverter extends Plugin {
 				// transform & connect
 				let result = this.transformLines(lines, indentLevels, customizeLine1, customizeLine2, customizeLine3, customizeLine4, customizeLine5);
 				
+				// replacement methods
+				for (let i = 1; i <= 5; i++) {
+					if (this.settings.currentReplace >= i) {
+						if (this.settings[`enableRegex${i}`]) {
+							try {
+								let regex = new RegExp(this.settings[`beforeReplace${i}`], "g");
+								result = result.replace(regex, this.settings[`afterReplace${i}`]);
+							} catch (error) {
+								new Notice("Something wrong with regular expression");
+								return;
+							}
+						} else {
+							let regrex = new RegExp(this.settings[`beforeReplace${i}`].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), "g"); // escape
+							result = result.replace(regrex, this.settings[`afterReplace${i}`]);
+						}
+						
+					}
+				  }
+
 				// transform linebreak
-				result = this.linebreak(result);
-
-				// export
-				if (this.settings.exportMethod == 'Copy'){
-					this.copyContent(result);
-				} else if (this.settings.exportMethod == 'Cursor'){
-					this.appendCursor(editor, result);
-				} else if (this.settings.exportMethod == 'Bottom'){
-					this.appendBottom(result);
-				} else if (this.settings.exportMethod == 'Section'){
-					this.outputToSection(editor, this.settings.sectionName, result);
-				}
-			}
-		});
-
-		// preset1
-		this.addCommand({
-			id: 'convert-type1',
-			name: 'Section, Paragraph, Content, Reference',
-			editorCallback: async (editor: Editor) => {
-
-				// get lines
-				const lines = await this.splitContent(editor);
-
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-				
-				// transform & connect
-				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.addSpace, this.extractPandoc);
-				
-				// adjust pandoc style
-				result = this.adjustPandoc(result);
-
-				// export
-				if (this.settings.exportMethod == 'Copy'){
-					this.copyContent(result);
-				} else if (this.settings.exportMethod == 'Cursor'){
-					this.appendCursor(editor, result);
-				} else if (this.settings.exportMethod == 'Bottom'){
-					this.appendBottom(result);
-				} else if (this.settings.exportMethod == 'Section'){
-					this.outputToSection(editor, this.settings.sectionName, result);
-				}
-			}
-		});
-
-		// preset2
-		this.addCommand({
-			id: 'convert-type2',
-			name: 'Section, Paragraph, Skip, Content, Reference',
-			editorCallback: async (editor: Editor) => {
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// transform & connect
-				let result = this.transformLines(lines, indentLevels, this.headerLevel2, this.doubleLinebreak, this.ignoreLine, this.addSpace, this.extractPandoc);
-				
-				// adjust pandoc style
-				result = this.adjustPandoc(result);
+				result = result.replace(/\\n/g, "\n");
 
 				// export
 				if (this.settings.exportMethod == 'Copy'){
@@ -378,13 +416,12 @@ export default class OutlineConverter extends Plugin {
 	// transform and connect each indentation level
 	transformLines(lines: string[], indentLevels: number[], ...methods: ((line: string) => string)[]): string {
 		let transformedLines: string[] = [];
-		let indexOffset = lines.length - indentLevels.length;
 	
 		for (let i = 0; i < indentLevels.length; i++) {
 			// Ignore lines such as front matter where indent level might be 0
 			if (indentLevels[i] === 0) continue;
 	
-			let line = lines[i + indexOffset].trim().slice(2);
+			let line = lines[i].trim().slice(2);
 			let level = indentLevels[i];
 	
 			// Ensure the method exists for the given level (1-indexed for methods)
@@ -397,49 +434,36 @@ export default class OutlineConverter extends Plugin {
 		return connectedResult;
 	}
 
-	// add methods for line
-
-	headerLevel2(line: string): string{
-		const transformedLine =  `\n\n## ` + line; 
-		return transformedLine;
-	}
-
-	doubleLinebreak(line: string): string{
-		const transformedLine =  `\n\n`; 
-		return transformedLine;
-	}
-
-	addSpace(line: string): string{
-		const transformedLine = line + ` `; 
-		return transformedLine;
-	}
-
-	extractPandoc(line: string): string{
-		const pattern = /\[\[@(.*?)(\||\]\])/ ;
-		let match = line.match(pattern);
-		let transformedLine: string = "";
-		if (match) {
-			transformedLine = `[@${match[1]}]`;
+	// transform autoheader
+	autoHeader(lines: string[], indentLevels: number[]): string {
+		let transformedLines: string[] = [];
+	
+		for (let i = 0; i < indentLevels.length; i++) {
+			// Ignore lines such as front matter where indent level might be 0
+			if (indentLevels[i] === 0) continue;
+	
+			let line = lines[i].trim().slice(2);
+			let level = indentLevels[i];
+			let nextLevel = indentLevels[i+1];
+			let next2Level = indentLevels[i+2];
+			let beforeLevel = indentLevels[i-1];
+			let addHeader = 0;
+			if (this.settings.startHeader == 'h2'){addHeader ++;}
+	
+			if (next2Level ==  level + 2) {
+				line = '\n\n' + '#'.repeat(level + addHeader) + ' ' + line;
+				transformedLines.push(line);
+			} else if (nextLevel == level + 1) {
+				line = '\n\n' + '#'.repeat(level + addHeader) + ' ' + line + '\n\n'
+				transformedLines.push(line);
+			} else {
+				if (level < beforeLevel){line = '\n\n' + line;}
+				if (this.settings.addSpace){line = line +  " ";}
+				transformedLines.push(line);
+			}
 		}
-		return transformedLine; 
-	}
-
-	ignoreLine(line: string): string{
-		return "";
-	}
-
-	// add replace methods 
-
-	// adjust pandoc style
-	adjustPandoc(text: string,): string {
-		const adjustedText = text.replace(/\]\[\@/g, ';@').replace(/(\.)\s*(\[@.*?\])/g, '$2$1 ');
-		return adjustedText
-	}
-
-	// \\n→\n
-	linebreak(line: string): string{
-		const transformedLine = line.replace(/\\n/g, "\n"); 
-		return transformedLine;
+		const connectedResult = transformedLines.join("");
+		return connectedResult;
 	}
 
 	// add output methods
@@ -517,6 +541,8 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 	plugin: OutlineConverter;
 	maxLevel: number = 5;
 	minLevel: number = 1;
+	maxReplace: number = 5;
+	minReplace: number = 1;
 
 	constructor(app: App, plugin: OutlineConverter) {
 		super(app, plugin);
@@ -527,6 +553,96 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
+
+		// auto header
+		new Setting(containerEl)
+		.setName('Auto-header converter')
+		.setDesc('Check if you want to add space between sentences.')
+		.addToggle(toggle => toggle
+			.setValue(this.plugin.settings.addSpace)
+			.onChange(async (value) => {
+				this.plugin.settings.addSpace = value;
+				await this.plugin.saveSettings();
+			}))
+		.addDropdown(dropdown => dropdown
+			.addOptions({'h1': 'Start at h1 header','h2':'Start at h2 header'})
+			.setValue(this.plugin.settings.startHeader)
+			.onChange(async (value) => {
+				this.plugin.settings.startHeader = value;
+				await this.plugin.saveSettings();
+			}));
+
+
+		//custom converter
+		new Setting(containerEl)
+			.setName('Custom comverter')
+			.setDesc(
+				`Check if you want to ignore content.
+				Set text you want to insert.
+				\\n means linebreak.
+				`
+			)
+			.addButton(button => 
+				button.setButtonText('+')
+				.setDisabled(this.plugin.settings.currentLevel >= this.maxLevel)
+				.onClick(async() => {
+					if (this.plugin.settings.currentLevel < this.maxLevel) {
+						this.plugin.settings.currentLevel++;
+						await this.display();
+						await this.plugin.saveSettings();
+					}
+			
+				}))
+			.addButton(button => 
+				button.setButtonText('-')
+				.setDisabled(this.plugin.settings.currentLevel <= this.minLevel)
+				.onClick(async() => {
+					if (this.plugin.settings.currentLevel > this.minLevel) {
+						this.plugin.settings.currentLevel--;
+						await this.display();
+						await this.plugin.saveSettings();
+					}
+				}));
+
+		// display up to current level
+		for (let i = 1; i <= this.plugin.settings.currentLevel; i++) {
+            this.addIndentLevelSetting(i);
+		}
+
+		// replace methodas
+		new Setting(containerEl)
+			.setName('Replacement')
+			.setDesc(
+				`Replacement before outputting the connected sentence. 
+				Check if you want to use regular expression for search.
+				`
+			)
+			.addButton(button => 
+				button.setButtonText('+')
+				.setDisabled(this.plugin.settings.currentReplace >= this.maxReplace)
+				.onClick(async() => {
+					if (this.plugin.settings.currentReplace < this.maxReplace) {
+						this.plugin.settings.currentReplace++;
+						await this.display();
+						await this.plugin.saveSettings();
+					}
+			
+				}))
+			.addButton(button => 
+				button.setButtonText('-')
+				.setDisabled(this.plugin.settings.currentReplace <= this.minReplace)
+				.onClick(async() => {
+					if (this.plugin.settings.currentReplace > this.minReplace) {
+						this.plugin.settings.currentReplace--;
+						await this.display();
+						await this.plugin.saveSettings();
+					}
+				}));
+
+		// display up to current level
+		for (let i = 1; i <= this.plugin.settings.currentReplace; i++) {
+            this.addReplaceMethodsSetting(i);
+		}
 
 		// export settings
 		new Setting(containerEl)
@@ -562,42 +678,6 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		function toggleSectionNameInput(value: string) {
 			sectionNameInput.settingEl.style.display = value === 'Section' ? '' : 'none';
 		}
-
-		new Setting(containerEl)
-			.setName('Custom comverter')
-			.setDesc(
-				`Check if you want to ignore content.
-				Set text you want to insert.
-				\\n means linebreak.
-				`
-			)
-			.addButton(button => 
-				button.setButtonText('+')
-				.setDisabled(this.plugin.settings.currentLevel >= this.maxLevel)
-				.onClick(async() => {
-					if (this.plugin.settings.currentLevel < this.maxLevel) {
-						this.plugin.settings.currentLevel++;
-						this.initializeLevelSettings(this.plugin.settings.currentLevel);
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-			
-				}))
-			.addButton(button => 
-				button.setButtonText('-')
-				.setDisabled(this.plugin.settings.currentLevel <= this.minLevel)
-				.onClick(async() => {
-					if (this.plugin.settings.currentLevel > this.minLevel) {
-						this.plugin.settings.currentLevel--;
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-				}));
-
-		// display up to current level
-		for (let i = 1; i <= this.plugin.settings.currentLevel; i++) {
-            this.addIndentLevelSetting(i);
-		}
 	}
 
 	addIndentLevelSetting(level: number): void {
@@ -627,11 +707,31 @@ class OutlineConverterSettingTab extends PluginSettingTab {
                 }));
 	}
 
-	initializeLevelSettings(level: number): void {
-		this.plugin.settings[`ignoreText${level}`] = false;
-		this.plugin.settings[`beforeText${level}`] = '';
-		this.plugin.settings[`afterText${level}`] = '';
-	}
+	addReplaceMethodsSetting(level: number): void {
+        const containerEl = this.containerEl;
 
+		new Setting(containerEl)
+            .setName(`Replace method ${level}`)
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings[`enableRegex${level}`])
+				.onChange(async (value) => {
+					this.plugin.settings[`enableRegex${level}`] = value;
+					await this.plugin.saveSettings();
+				}))	
+            .addText(text => text
+                .setPlaceholder('Find')
+                .setValue(this.plugin.settings[`beforeReplace${level}`])
+                .onChange(async (value) => {
+                    this.plugin.settings[`beforeReplace${level}`] = value;
+                    await this.plugin.saveSettings();
+                }))
+            .addText(text => text
+                .setPlaceholder('Replace')
+                .setValue(this.plugin.settings[`afterReplace${level}`])
+                .onChange(async (value) => {
+                    this.plugin.settings[`afterReplace${level}`] = value;
+                    await this.plugin.saveSettings();
+                }));
+	}
 
 }
