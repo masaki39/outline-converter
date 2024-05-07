@@ -98,6 +98,9 @@ export default class OutlineConverter extends Plugin {
 				// transform linebreak
 				result = result.replace(/\\n/g, "\n");
 
+				//insert methods
+				result = await this.insertContent(result);
+
 				// export
 				if (this.settings.exportMethod == 'Copy'){
 					this.copyContent(result);
@@ -188,6 +191,9 @@ export default class OutlineConverter extends Plugin {
 
 				// transform linebreak
 				result = result.replace(/\\n/g, "\n");
+
+				//insert methods
+				result = await this.insertContent(result);
 
 				// export
 				if (this.settings.exportMethod == 'Copy'){
@@ -287,11 +293,6 @@ export default class OutlineConverter extends Plugin {
 				const commands = (this.app as any).commands;
 				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
 
-				if (!commandExist){
-					new Notice("Install outliner plugin");
-					return;
-				}
-
 				const cursor = editor.getCursor();
 				if (cursor.line == 0) {
 					return;
@@ -300,7 +301,7 @@ export default class OutlineConverter extends Plugin {
 				const line = editor.getLine(cursor.line);	
 				const lineAbove = editor.getLine(cursor.line - 1);
 
-				if (line.trim().startsWith(`- `) && lineAbove.trim().startsWith(`- `)) {
+				if (commandExist && !editor.somethingSelected() && line.trim().startsWith(`- `) && lineAbove.trim().startsWith(`- `)) {
 					commands.executeCommandById(commandId);
 				} else {
 					editor.exec("swapLineUp");
@@ -319,11 +320,6 @@ export default class OutlineConverter extends Plugin {
 				const commands = (this.app as any).commands;
 				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
 		
-				if (!commandExist){
-					new Notice("Install outliner plugin");
-					return; 
-				}
-		
 				const cursor = editor.getCursor();
 				const lastLineNumber = editor.lineCount() - 1; // Get the index of the last line
 		
@@ -335,7 +331,7 @@ export default class OutlineConverter extends Plugin {
 				const lineBelow = editor.getLine(cursor.line + 1);
 		
 				// Check if both current line and the line below start with "- "
-				if (line.trim().startsWith(`- `) && lineBelow.trim().startsWith(`- `)) {
+				if (commandExist && !editor.somethingSelected() && line.trim().startsWith(`- `) && lineBelow.trim().startsWith(`- `)) {
 					commands.executeCommandById(commandId);
 				} else {
 					editor.exec("swapLineDown");
@@ -464,6 +460,25 @@ export default class OutlineConverter extends Plugin {
 		}
 		const connectedResult = transformedLines.join("");
 		return connectedResult;
+	}
+
+	// insert methods
+	async insertContent(result: string): Promise<string> {
+		// get file
+		const activeFile = this.app.workspace.getActiveFile();
+		if (!activeFile) {
+			return result;
+		} 
+		const fileContent = await this.app.vault.read(activeFile);
+		
+		// match {{i:id}}
+		const insertPattern = /\{\{i:(.+?)\}\}/g;
+		result = result.replace(insertPattern, (match, id) => {
+			const contentPattern = new RegExp(`\\{\\{s:${id}\\}\\}(.*?)\\{\\{e:${id}\\}\\}`, 's');
+			const content = contentPattern.exec(fileContent);
+			return content ? content[1] : match;
+		});
+		return result;
 	}
 
 	// add output methods
