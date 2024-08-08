@@ -283,6 +283,56 @@ export default class OutlineConverter extends Plugin {
 			}
 		});
 
+		// fold indentation level 4 command
+		this.addCommand({
+			id: 'fold-level4',
+			name: 'Fold all of indentation level 4',
+			editorCallback: async (editor: Editor) => {
+
+				// unfold all
+				editor.exec(`unfoldAll`);
+
+				// get lines
+				const lines = await this.splitContent(editor);
+				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
+				// fold the indentlevel
+				for (let i = 0; i < indentLevels.length; i++) {
+					if (indentLevels[i] === 4) {
+						editor.setCursor(i);
+						editor.exec(`toggleFold`);
+					}
+				}
+			}
+		});
+
+		// fold indentation level 5 command
+		this.addCommand({
+			id: 'fold-level5',
+			name: 'Fold all of indentation level 5',
+			editorCallback: async (editor: Editor) => {
+
+				// unfold all
+				editor.exec(`unfoldAll`);
+
+				// get lines
+				const lines = await this.splitContent(editor);
+				
+				// get indent levels list
+				let indentLevels = this.calculateIndentLevels(lines);
+
+				// fold the indentlevel
+				for (let i = 0; i < indentLevels.length; i++) {
+					if (indentLevels[i] === 5) {
+						editor.setCursor(i);
+						editor.exec(`toggleFold`);
+					}
+				}
+			}
+		});
+
 		this.addCommand({
 			id: 'line-up',
 			name: 'Swap line up',

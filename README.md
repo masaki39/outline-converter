@@ -87,7 +87,7 @@ ContinuousText-->|replacement×1-5|ReplacedText
 ReplacedText-->|+insertion|Export
 ```
 
- Some 
+`{{i:id}}` is replaced with content between `{{s:id}}` and  `{{e:id}}`.
 
 ### Select export method
 
@@ -95,7 +95,7 @@ Choose from the following options for exporting your text: Copy to clipboard. Ap
 
 ### Other commands
 
-Fold all of indentation levels 1-3. 
+Fold all of indentation levels 1-5. 
 
 #### Swap lines commands
 
