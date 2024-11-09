@@ -6,7 +6,7 @@ interface OutlineConverterSettings {
 	currentLevel: number;
 	currentReplace: number;
 	startHeader: string;
-	addSpace: boolean;
+	addSpace: string;
 	[key: `beforeText${string}`]: string; 
 	[key: `afterText${string}`]: string; 
 	[key: `ignoreText${string}`]: boolean; 
@@ -22,7 +22,7 @@ const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	currentLevel: 3,
 	currentReplace: 1,
 	startHeader: 'h2',
-	addSpace: true,
+	addSpace: '\n',
 	ignoreText1: false,
 	beforeText1: "\\n\\n## ",
 	afterText1: "",
@@ -504,7 +504,7 @@ export default class OutlineConverter extends Plugin {
 				transformedLines.push(line);
 			} else {
 				if (level < beforeLevel){line = '\n\n' + line;}
-				if (this.settings.addSpace){line = line +  " ";}
+				if (nextLevel == level && next2Level <= level){line = line + this.settings.addSpace}
 				transformedLines.push(line);
 			}
 		}
@@ -622,8 +622,9 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 		// auto header
 		new Setting(containerEl)
 		.setName('Auto-header converter')
-		.setDesc('Check if you want to add space between sentences.')
-		.addToggle(toggle => toggle
+		.setDesc('Configure content connection and header starting level.')
+		.addDropdown(dropdown => dropdown
+			.addOptions({'': 'Connect directly',' ':'Insert space', '\n':'Insert linebreak'})
 			.setValue(this.plugin.settings.addSpace)
 			.onChange(async (value) => {
 				this.plugin.settings.addSpace = value;
@@ -636,7 +637,6 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 				this.plugin.settings.startHeader = value;
 				await this.plugin.saveSettings();
 			}));
-
 
 		//custom converter
 		new Setting(containerEl)
