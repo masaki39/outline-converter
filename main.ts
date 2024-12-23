@@ -490,9 +490,9 @@ export default class OutlineConverter extends Plugin {
 	
 			let line = lines[i].trim().slice(2);
 			let level = indentLevels[i];
-			let nextLevel = indentLevels[i+1];
-			let next2Level = indentLevels[i+2];
-			let beforeLevel = indentLevels[i-1];
+			let nextLevel = indentLevels[i+1] ?? 0;
+			let next2Level = indentLevels[i+2] ?? 0;
+			let beforeLevel = indentLevels[i-1] ?? 0;
 			let addHeader = 0;
 			if (this.settings.startHeader == 'h2'){addHeader ++;}
 	
@@ -500,7 +500,7 @@ export default class OutlineConverter extends Plugin {
 				line = '\n\n' + '#'.repeat(level + addHeader) + ' ' + line;
 				transformedLines.push(line);
 			} else if (nextLevel == level + 1) {
-				line = '\n\n' + '#'.repeat(level + addHeader) + ' ' + line + '\n\n'
+				line = '\n\n' + '#'.repeat(level + addHeader) + ' ' + line + '\n\n';
 				transformedLines.push(line);
 			} else {
 				if (level < beforeLevel){line = '\n\n' + line;}
