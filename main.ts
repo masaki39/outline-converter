@@ -523,7 +523,7 @@ class OutlineConverterSettingTab extends PluginSettingTab {
 
 		//custom converter
 		new Setting(containerEl)
-			.setName('Custom comverter')
+			.setName('Custom converter')
 			.setDesc(
 				`Check if you want to ignore content.
 				Set text you want to insert.

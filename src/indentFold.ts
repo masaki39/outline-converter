@@ -11,26 +11,17 @@ export class IndentFold {
 	}
    
     // transform content to lines and get frontmatter length
-	private async splitContent(editor: Editor): Promise<{ lines: string[], frontmatterLength: number }> {
-        // if selection is not empty, use selection
-        if (editor.getSelection()){
-            const fileContent = editor.getSelection();
-            const lines = fileContent.split(/\r?\n/);
-            const frontmatterLength = 0;
-            return { lines, frontmatterLength };
-        } else {
-            // if selection is empty, use active file
-			const activeFile = this.app.workspace.getActiveFile();
-			if (!activeFile) {
-				new Notice('No active file.');
-				return { lines: [], frontmatterLength: 0 };
-			}
-			const fileContent = await this.app.vault.read(activeFile);
-            const { frontmatter, content } = parseFrontmatter(fileContent);
-            const lines = [...frontmatter.split(/\r?\n/).slice(0, -1), ...content.split(/\r?\n/)];
-            const frontmatterLength = frontmatter.split(/\r?\n/).slice(0, -1).length;
-            return { lines, frontmatterLength };
-		}
+	private async splitContent(): Promise<{ lines: string[], frontmatterLength: number }> {
+        const activeFile = this.app.workspace.getActiveFile();
+        if (!activeFile) {
+            new Notice('No active file.');
+            return { lines: [], frontmatterLength: 0 };
+        }
+        const fileContent = await this.app.vault.read(activeFile);
+        const { frontmatter, content } = parseFrontmatter(fileContent);
+        const lines = [...frontmatter.split(/\r?\n/).slice(0, -1), ...content.split(/\r?\n/)];
+        const frontmatterLength = frontmatter.split(/\r?\n/).slice(0, -1).length;
+        return { lines, frontmatterLength };
 	}
 
     // calculate indent levels
@@ -79,7 +70,7 @@ export class IndentFold {
             editor.exec('unfoldAll');
 
             // get lines
-            const result = await this.splitContent(editor);
+            const result = await this.splitContent();
             if (result.lines.length === 0) {
                 return;
             }
@@ -105,8 +96,9 @@ export class IndentFold {
             // fold the indentlevel
             (this.app as any).commands.executeCommandById('editor:fold-more');
 
-            // set cursor after frontmatter
-            editor.setCursor(result.frontmatterLength, 0);
+            // set cursor after last cursor position
+            const lastCursorPosition = cursorPositions[cursorPositions.length - 1];
+            editor.setCursor(lastCursorPosition, editor.getLine(lastCursorPosition)?.length || 0);
 
         } catch (error) {
             console.error('Error in foldSpecificLevel:', error);
