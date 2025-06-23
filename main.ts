@@ -1,4 +1,5 @@
 import { App, Editor, Notice, Plugin, PluginSettingTab, Setting } from 'obsidian';
+import { IndentFold } from './src/indentFold';
 
 interface OutlineConverterSettings {
 	exportMethod: string;
@@ -57,10 +58,17 @@ const DEFAULT_SETTINGS: OutlineConverterSettings = {
 
 export default class OutlineConverter extends Plugin {
 	settings: OutlineConverterSettings;
+	private foldLevel: IndentFold;
 
 	async onload() {
 		await this.loadSettings();
-	
+
+		// initialization
+		this.foldLevel = new IndentFold(this);
+
+		// loading
+		await this.foldLevel.onload();
+		
 		// auto-header converter
 		this.addCommand({
 			id: 'auto-header',
@@ -204,131 +212,6 @@ export default class OutlineConverter extends Plugin {
 					this.appendBottom(result);
 				} else if (this.settings.exportMethod == 'Section'){
 					this.outputToSection(editor, this.settings.sectionName, result);
-				}
-			}
-		});
-
-		// fold indentation level 1 command
-		this.addCommand({
-			id: 'fold-level1',
-			name: 'Fold all of indentation level 1',
-			editorCallback: async (editor: Editor) => {
-
-				// unfold all
-				editor.exec(`unfoldAll`);
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// fold the indentlevel
-				for (let i = 0; i < indentLevels.length; i++) {
-					if (indentLevels[i] === 1) {
-						editor.setCursor(i);
-						editor.exec(`toggleFold`);
-					}
-				}
-			}
-		});
-
-		// fold indentation level 2 command
-		this.addCommand({
-			id: 'fold-level2',
-			name: 'Fold all of indentation level 2',
-			editorCallback: async (editor: Editor) => {
-
-				// unfold all
-				editor.exec(`unfoldAll`);
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// fold the indentlevel
-				for (let i = 0; i < indentLevels.length; i++) {
-					if (indentLevels[i] === 2) {
-						editor.setCursor(i);
-						editor.exec(`toggleFold`);
-					}
-				}
-			}
-		});
-
-		// fold indentation level 3 command
-		this.addCommand({
-			id: 'fold-level3',
-			name: 'Fold all of indentation level 3',
-			editorCallback: async (editor: Editor) => {
-
-				// unfold all
-				editor.exec(`unfoldAll`);
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// fold the indentlevel
-				for (let i = 0; i < indentLevels.length; i++) {
-					if (indentLevels[i] === 3) {
-						editor.setCursor(i);
-						editor.exec(`toggleFold`);
-					}
-				}
-			}
-		});
-
-		// fold indentation level 4 command
-		this.addCommand({
-			id: 'fold-level4',
-			name: 'Fold all of indentation level 4',
-			editorCallback: async (editor: Editor) => {
-
-				// unfold all
-				editor.exec(`unfoldAll`);
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// fold the indentlevel
-				for (let i = 0; i < indentLevels.length; i++) {
-					if (indentLevels[i] === 4) {
-						editor.setCursor(i);
-						editor.exec(`toggleFold`);
-					}
-				}
-			}
-		});
-
-		// fold indentation level 5 command
-		this.addCommand({
-			id: 'fold-level5',
-			name: 'Fold all of indentation level 5',
-			editorCallback: async (editor: Editor) => {
-
-				// unfold all
-				editor.exec(`unfoldAll`);
-
-				// get lines
-				const lines = await this.splitContent(editor);
-				
-				// get indent levels list
-				let indentLevels = this.calculateIndentLevels(lines);
-
-				// fold the indentlevel
-				for (let i = 0; i < indentLevels.length; i++) {
-					if (indentLevels[i] === 5) {
-						editor.setCursor(i);
-						editor.exec(`toggleFold`);
-					}
 				}
 			}
 		});

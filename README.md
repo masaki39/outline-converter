@@ -28,7 +28,7 @@
 		- Append to the bottom of the active note.
 		- Replace a section; if none exists, create it at the bottom of the note.
 	- Other commands
-		- Fold all of indentation levels 1-3.
+		- Fold all of indentation levels 1-5.
 		- Swap lines commands
 			- In bullet lists, it uses line swapping commands of the Outliner plugin.
 			- Outside of that, it simply swaps lines.
