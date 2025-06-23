@@ -24,8 +24,8 @@ export class IndentFold {
         return { lines, frontmatterLength };
 	}
 
-    // calculate indent levels
-    private calculateIndentLevels(lines: string[], frontmatterLength: number, tabSize: number = 4): number[]{
+        // calculate indent levels
+    private calculateIndentLevels(lines: string[], frontmatterLength: number, tabSize: number = (this.app as any).vault.getConfig("tabSize") ?? 4): number[]{        
         let indentLevels: number[] = [];
     
         // Determine the index to start processing from (ignore frontmatter)

@@ -305,7 +305,7 @@ export default class OutlineConverter extends Plugin {
 	}
 
 	// return list of indentlevels from lines
-	calculateIndentLevels(lines: string[], tabSize: number = 4): number[]{
+	calculateIndentLevels(lines: string[], tabSize: number = (this.app as any).vault.getConfig("tabSize") ?? 4): number[]{
 		let ignoreUntilIndex = 0;
 	    let indentLevels: number[] = [];
 
