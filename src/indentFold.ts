@@ -62,6 +62,8 @@ export class IndentFold {
         return cursorPositions;
     }
 
+    // 
+
     // fold specific level
     async foldSpecificLevel(editor: Editor, level: number): Promise<void> {
         try {
@@ -78,12 +80,26 @@ export class IndentFold {
             // get indent levels list
             const indentLevels = this.calculateIndentLevels(result.lines, result.frontmatterLength);
 
-            // get cursor positions
+            // get cursor positions (line numbers)
             const cursorPositions = this.getCursorPositions(level, indentLevels);
 
             if (cursorPositions.length === 0) {
                 new Notice(`No items found at level ${level}`);
                 return;
+            }
+
+            // get current cursor and determine return cursor position
+            const currentCursorPosition = editor.getCursor();
+            const currentLineNumber = currentCursorPosition.line;
+            const currentLineIndentLevel = indentLevels[currentLineNumber];
+            let returnCursorPosition = currentCursorPosition;
+            if (currentLineIndentLevel > level) {
+                // get the nearest cursor position line number that is less than current line number
+                const returnCursorLine = Math.max(...cursorPositions.filter(pos => pos < currentLineNumber)); 
+                returnCursorPosition = {
+                    line: returnCursorLine,
+                    ch: editor.getLine(returnCursorLine)?.length || 0
+                };
             }
 
             // set cursor positions
@@ -96,9 +112,9 @@ export class IndentFold {
             // fold the indentlevel
             (this.app as any).commands.executeCommandById('editor:fold-more');
 
-            // set cursor after last cursor position
-            const lastCursorPosition = cursorPositions[cursorPositions.length - 1];
-            editor.setCursor(lastCursorPosition, editor.getLine(lastCursorPosition)?.length || 0);
+            // set cursor to the nearest cursor position
+            editor.setCursor(returnCursorPosition);
+            editor.scrollIntoView({ from: returnCursorPosition, to: returnCursorPosition }, true);
 
         } catch (error) {
             console.error('Error in foldSpecificLevel:', error);
