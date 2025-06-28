@@ -114,7 +114,9 @@ export class IndentFold {
 
             // set cursor to the nearest cursor position
             editor.setCursor(returnCursorPosition);
-            editor.scrollIntoView({ from: returnCursorPosition, to: returnCursorPosition }, true);
+            requestAnimationFrame(() => {
+                editor.scrollIntoView({ from: returnCursorPosition, to: returnCursorPosition }, true);
+            });
 
         } catch (error) {
             console.error('Error in foldSpecificLevel:', error);
