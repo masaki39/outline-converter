@@ -1,5 +1,8 @@
 # Obsidian Outline Converter Plugin
 
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/masaki39/outline-converter/total)
+
+
 - Obsidian Outline Converter Plugin
 	- Features
 		- This plugin converts bullet list outlines into continuous text.
