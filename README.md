@@ -1,6 +1,6 @@
 # Obsidian Outline Converter Plugin
 
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/masaki39/outline-converter/total)
+![downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24.outline-converter.downloads&label=downloads&color=%237c3aed)
 
 
 - Obsidian Outline Converter Plugin
