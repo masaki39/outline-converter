@@ -1,6 +1,6 @@
 # Outline Converter
 
-[![GitHub Release](https://img.shields.io/github/v/release/masaki39/outline-converter?sort=semver&label=latest&logo=github&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest) [![Total Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D.downloads&label=total%20downloads&color=%237c3aed)](https://obsidian.md/plugins?id=outline-converter) [![Latest Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D%5B%221.4.0%22%5D&label=latest%20downloads&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/masaki39/outline-converter?sort=semver&label=latest&logo=github&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest) [![Total Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D.downloads&label=total%20downloads&color=%237c3aed)](https://obsidian.md/plugins?id=outline-converter) [![Latest Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D%5B%221.4.1%22%5D&label=latest%20downloads&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest)
 
 📖 **[日本語版 README](./README_ja.md)**
 
@@ -27,9 +27,6 @@ Transform your bullet point outlines into beautifully formatted continuous text 
 
 The plugin operates on either selected text or the entire active note.
 
-> [!tip]
-> Lines starting with `// ` will be ignored during conversion.
-
 ### Auto-header Converter
 
 Automatically converts outlines to continuous text. Items with children become headers, items without children become regular text.
@@ -53,6 +50,8 @@ This plugin converts outlines. You can use two commands.
 ### Custom Converter
 
 Control text transformation at each indentation level (1-5). For each level, add text before/after content or ignore content entirely.
+
+Lines starting with `//` (with or without space) will have their content ignored, but before/after text will still be applied.
 
 ### Replacement (Find & Replace)
 

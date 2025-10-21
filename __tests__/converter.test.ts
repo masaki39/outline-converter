@@ -9,7 +9,6 @@ describe('applyReplacements', () => {
 	});
 
 	it('should apply simple string replacement', () => {
-		settings.currentReplace = 1;
 		settings.beforeReplace1 = 'foo';
 		settings.afterReplace1 = 'bar';
 		settings.enableRegex1 = false;
@@ -19,7 +18,6 @@ describe('applyReplacements', () => {
 	});
 
 	it('should apply regex replacement', () => {
-		settings.currentReplace = 1;
 		settings.beforeReplace1 = '\\d+';
 		settings.afterReplace1 = 'X';
 		settings.enableRegex1 = true;
@@ -29,7 +27,6 @@ describe('applyReplacements', () => {
 	});
 
 	it('should apply multiple replacements in order', () => {
-		settings.currentReplace = 2;
 		settings.beforeReplace1 = 'foo';
 		settings.afterReplace1 = 'bar';
 		settings.enableRegex1 = false;
@@ -42,7 +39,6 @@ describe('applyReplacements', () => {
 	});
 
 	it('should escape special regex characters in non-regex mode', () => {
-		settings.currentReplace = 1;
 		settings.beforeReplace1 = '$100';
 		settings.afterReplace1 = '$200';
 		settings.enableRegex1 = false;
@@ -52,7 +48,6 @@ describe('applyReplacements', () => {
 	});
 
 	it('should throw error on invalid regex', () => {
-		settings.currentReplace = 1;
 		settings.beforeReplace1 = '[invalid(regex';
 		settings.afterReplace1 = 'replacement';
 		settings.enableRegex1 = true;
@@ -137,5 +132,22 @@ describe('autoHeaderTransform', () => {
 		const result = autoHeaderTransform(lines, indentLevels, 'h1', '\n');
 		expect(result).not.toContain('---');
 		expect(result).toContain('Item');
+	});
+
+	it('should exclude frontmatter with lists from conversion', () => {
+		const lines = [
+			'---',
+			'tags:',
+			'  - tag1',
+			'  - tag2',
+			'---',
+			'- Real Item'
+		];
+		const indentLevels = [0, 0, 0, 0, 0, 1];
+
+		const result = autoHeaderTransform(lines, indentLevels, 'h1', '\n');
+		expect(result).not.toContain('tag1');
+		expect(result).not.toContain('tag2');
+		expect(result).toContain('Real Item');
 	});
 });

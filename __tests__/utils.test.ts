@@ -56,24 +56,24 @@ describe('calculateIndentLevels', () => {
 		expect(result).toEqual([0, 0, 0, 1, 2]);
 	});
 
-	it('should mark comment lines as -1', () => {
+	it('should mark comment lines as 1', () => {
 		const lines = [
 			'- Level 1',
 			'- // This is a comment',
 			'\t- Level 2',
 		];
 		const result = calculateIndentLevels(lines, 0, 4);
-		expect(result).toEqual([1, -1, 2]);
+		expect(result).toEqual([1, 1, 2]);
 	});
 
-	it('should mark indented comment lines as -1', () => {
+	it('should mark indented comment lines as 2', () => {
 		const lines = [
 			'- Level 1',
 			'\t- // This is an indented comment',
 			'\t- Level 2',
 		];
 		const result = calculateIndentLevels(lines, 0, 4);
-		expect(result).toEqual([1, -1, 2]);
+		expect(result).toEqual([1, 2, 2]);
 	});
 
 	it('should handle non-list lines', () => {

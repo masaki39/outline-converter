@@ -49,27 +49,17 @@ export function calculateIndentLevels(
         // Check for tab-indented list items
         const matchTabs = line.match(/^(\t*)- /);
         if (matchTabs) {
-            const content = line.slice(matchTabs[0].length).trim();
-            if (content.startsWith('// ')) {
-                indentLevels.push(-1); // -1 indicates an ignored line
-            } else {
-                level = matchTabs[1].length + 1;
-                indentLevels.push(level);
-            }
+            level = matchTabs[1].length + 1;
+            indentLevels.push(level);
             continue;
         }
 
         // Check for space-indented list items
         const matchSpaces = line.match(/^( *)- /);
         if (matchSpaces) {
-            const content = line.slice(matchSpaces[0].length).trim();
-            if (content.startsWith('// ')) {
-                indentLevels.push(-1); // -1 indicates an ignored line
-            } else {
-                const leadingSpaces = matchSpaces[1].length;
-                level = Math.floor(leadingSpaces / tabSize) + 1;
-                indentLevels.push(level);
-            }
+            const leadingSpaces = matchSpaces[1].length;
+            level = Math.floor(leadingSpaces / tabSize) + 1;
+            indentLevels.push(level);
             continue;
         }
 

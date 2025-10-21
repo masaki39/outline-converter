@@ -1,6 +1,6 @@
 # Outline Converter
 
-[![GitHub Release](https://img.shields.io/github/v/release/masaki39/outline-converter?sort=semver&label=latest&logo=github&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest) [![Total Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D.downloads&label=total%20downloads&color=%237c3aed)](https://obsidian.md/plugins?id=outline-converter) [![Latest Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D%5B%221.3.8%22%5D&label=latest%20downloads&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest)
+[![GitHub Release](https://img.shields.io/github/v/release/masaki39/outline-converter?sort=semver&label=latest&logo=github&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest) [![Total Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D.downloads&label=total%20downloads&color=%237c3aed)](https://obsidian.md/plugins?id=outline-converter) [![Latest Downloads](https://img.shields.io/badge/dynamic/json?logo=obsidian&url=https%3A%2F%2Fraw.githubusercontent.com%2Fobsidianmd%2Fobsidian-releases%2Fmaster%2Fcommunity-plugin-stats.json&query=%24%5B%22outline-converter%22%5D%5B%221.4.1%22%5D&label=latest%20downloads&color=%237c3aed)](https://github.com/masaki39/outline-converter/releases/latest)
 
 📖 **[English README](./README.md)**
 
@@ -27,9 +27,6 @@
 
 選択テキストまたはアクティブノート全体を処理対象とします。
 
-> [!tip]
-> `// `で始まる行は変換時に無視されます。
-
 ### Auto-header Converter
 
 アウトラインの構造に基づいて自動変換します。子項目を持つ項目は見出し、持たない項目は本文になります。
@@ -53,6 +50,8 @@
 ### Custom Converter
 
 インデントレベル(1〜5)ごとにテキスト変換を制御できます。各レベルで、コンテンツの前後にテキストを追加したり、コンテンツを無視することが可能です。
+
+//から始まる行はコンテンツを無視します。
 
 ### Replacement (Find & Replace)
 

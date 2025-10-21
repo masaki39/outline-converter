@@ -30,12 +30,12 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				try {
 					// get lines
-					const lines = await this.splitContent(editor);
+					const { lines, frontmatterLength } = await this.splitContent(editor);
 					if (lines.length === 0) return;
 
 					// get indent levels list
 					const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
-					let indentLevels = calculateIndentLevels(lines, 0, tabSize);
+					let indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
 
 					// filter ignored lines
 					const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
@@ -73,12 +73,12 @@ export default class OutlineConverter extends Plugin {
 			editorCallback: async (editor: Editor) => {
 				try {
 					// get lines
-					const lines = await this.splitContent(editor);
+					const { lines, frontmatterLength } = await this.splitContent(editor);
 					if (lines.length === 0) return;
 
 					// get indent levels list
 					const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
-					let indentLevels = calculateIndentLevels(lines, 0, tabSize);
+					let indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
 
 					// filter ignored lines
 					const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
@@ -183,18 +183,21 @@ export default class OutlineConverter extends Plugin {
 	/**
 	 * Split content into lines from editor selection or entire file
 	 */
-	async splitContent(editor: Editor): Promise<string[]> {
+	async splitContent(editor: Editor): Promise<{ lines: string[], frontmatterLength: number }> {
 		let fileContent = editor.getSelection();
 		if (!fileContent) {
 			const activeFile = this.app.workspace.getActiveFile();
 			if (!activeFile) {
 				new Notice('No active file.');
-				return [];
+				return { lines: [], frontmatterLength: 0 };
 			}
 			fileContent = await this.app.vault.read(activeFile);
 		}
-		const lines = fileContent.split(/\r?\n/);
-		return lines;
+		const { parseFrontmatter } = await import('./src/utilis');
+		const { frontmatter, content } = parseFrontmatter(fileContent);
+		const lines = [...frontmatter.split(/\r?\n/).slice(0, -1), ...content.split(/\r?\n/)];
+		const frontmatterLength = frontmatter.split(/\r?\n/).slice(0, -1).length;
+		return { lines, frontmatterLength };
 	}
 
 	/**

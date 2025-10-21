@@ -55,8 +55,13 @@ export function transformLines(
 		// Ignore lines such as frontmatter where indent level might be 0
 		if (indentLevels[i] === 0) continue;
 
-		const line = lines[i].trim().slice(2); // Remove "- " prefix
+		let line = lines[i].trim().slice(2); // Remove "- " prefix
 		const level = indentLevels[i];
+
+		// Check if line starts with // (with or without space) - ignore content but keep before/after text
+		if (line.startsWith('//')) {
+			line = ''; // Empty content, but transformers will still apply before/after text
+		}
 
 		// Ensure the transformer exists for the given level (1-indexed)
 		if (level > 0 && level <= transformers.length) {
