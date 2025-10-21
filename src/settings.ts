@@ -6,8 +6,6 @@ export type LevelIndex = 1 | 2 | 3 | 4 | 5;
 export interface OutlineConverterSettings {
 	exportMethod: string;
 	sectionName: string;
-	currentLevel: number;
-	currentReplace: number;
 	startHeader: string;
 	addSpace: string;
 	// Level 1-5 settings
@@ -47,8 +45,6 @@ export interface OutlineConverterSettings {
 export const DEFAULT_SETTINGS: OutlineConverterSettings = {
 	exportMethod: 'Copy',
 	sectionName: 'Output',
-	currentLevel: 3,
-	currentReplace: 1,
 	startHeader: 'h2',
 	addSpace: '\n',
 	ignoreText1: false,
@@ -85,10 +81,6 @@ export const DEFAULT_SETTINGS: OutlineConverterSettings = {
 
 export class OutlineConverterSettingTab extends PluginSettingTab {
 	plugin: OutlineConverter;
-	maxLevel: number = 5;
-	minLevel: number = 1;
-	maxReplace: number = 5;
-	minReplace: number = 1;
 
 	constructor(app: App, plugin: OutlineConverter) {
 		super(app, plugin);
@@ -103,13 +95,13 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		// auto header
 		containerEl.createEl('h2', { text: 'Auto-header converter' });
 		containerEl.createEl('p', {
-			text: 'Automatically converts outline to continuous text with headers. Items with children become headers, others become regular text.',
+			text: 'Converts outline to text with headers. Items with children become headers.',
 			cls: 'setting-item-description'
 		});
 
 		new Setting(containerEl)
 		.setName('Content connection')
-		.setDesc('How to connect content at the same level.')
+		.setDesc('How to connect same-level content.')
 		.addDropdown(dropdown => dropdown
 			.addOptions({'': 'Connect directly',' ':'Insert space', '\n':'Insert linebreak'})
 			.setValue(this.plugin.settings.addSpace)
@@ -120,7 +112,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 		.setName('Header starting level')
-		.setDesc('Choose whether to start headers at h1 or h2.')
+		.setDesc('Start headers at h1 or h2.')
 		.addDropdown(dropdown => dropdown
 			.addOptions({'h1': 'Start at h1 header','h2':'Start at h2 header'})
 			.setValue(this.plugin.settings.startHeader)
@@ -132,87 +124,37 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		//custom converter
 		containerEl.createEl('h2', { text: 'Custom converter' });
 		containerEl.createEl('p', {
-			text: 'Customize how each indentation level is converted. For each level, you can add text before/after the content, or ignore the content entirely. Use \\n for linebreaks.',
+			text: 'Customize conversion per indent level. Add text before/after or ignore content. Use \\n for linebreaks.',
 			cls: 'setting-item-description'
 		});
 
-		new Setting(containerEl)
-			.setName('Indentation levels')
-			.setDesc('Adjust the number of indentation levels to customize (1-5).')
-			.addButton(button =>
-				button.setButtonText('+')
-				.setDisabled(this.plugin.settings.currentLevel >= this.maxLevel)
-				.onClick(async() => {
-					if (this.plugin.settings.currentLevel < this.maxLevel) {
-						this.plugin.settings.currentLevel++;
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-
-				}))
-			.addButton(button =>
-				button.setButtonText('-')
-				.setDisabled(this.plugin.settings.currentLevel <= this.minLevel)
-				.onClick(async() => {
-					if (this.plugin.settings.currentLevel > this.minLevel) {
-						this.plugin.settings.currentLevel--;
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-				}));
-
-		// display up to current level
-		for (let i = 1; i <= this.plugin.settings.currentLevel; i++) {
+		// display all 5 levels
+		for (let i = 1; i <= 5; i++) {
             this.addIndentLevelSetting(i);
 		}
 
 		// replace methods
 		containerEl.createEl('h2', { text: 'Replacement' });
 		containerEl.createEl('p', {
-			text: 'Apply find & replace operations to the converted text. Toggle the checkbox to enable regular expression mode for advanced pattern matching.',
+			text: 'Find & replace operations. Toggle checkbox for regex mode.',
 			cls: 'setting-item-description'
 		});
 
-		new Setting(containerEl)
-			.setName('Replacement rules')
-			.setDesc('Adjust the number of replacement rules to apply (1-5).')
-			.addButton(button =>
-				button.setButtonText('+')
-				.setDisabled(this.plugin.settings.currentReplace >= this.maxReplace)
-				.onClick(async() => {
-					if (this.plugin.settings.currentReplace < this.maxReplace) {
-						this.plugin.settings.currentReplace++;
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-
-				}))
-			.addButton(button =>
-				button.setButtonText('-')
-				.setDisabled(this.plugin.settings.currentReplace <= this.minReplace)
-				.onClick(async() => {
-					if (this.plugin.settings.currentReplace > this.minReplace) {
-						this.plugin.settings.currentReplace--;
-						await this.display();
-						await this.plugin.saveSettings();
-					}
-				}));
-
-		// display up to current level
-		for (let i = 1; i <= this.plugin.settings.currentReplace; i++) {
+		// display all 5 replacement rules
+		for (let i = 1; i <= 5; i++) {
             this.addReplaceMethodsSetting(i);
 		}
 
 		// export settings
 		containerEl.createEl('h2', { text: 'Export method' });
 		containerEl.createEl('p', {
-			text: 'Choose how the converted text should be exported.',
+			text: 'Output destination for converted text.',
 			cls: 'setting-item-description'
 		});
 
 		new Setting(containerEl)
 		.setName('Select export method')
-		.setDesc('Choose where to output the converted text.')
+		.setDesc('Output destination.')
 		.addDropdown(dropdown => dropdown
 			.addOptions({
 				'Copy': 'Copy content to clipboard',
@@ -230,7 +172,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		// Section name setting
 		const sectionNameInput = new Setting(containerEl)
 		.setName('Section name')
-		.setDesc('Specify the section heading (without #) to replace. If the section doesn\'t exist, it will be created at the end of the note.')
+		.setDesc('Section heading (without #) to replace. Created if not exists.')
 		.addText(text => text
 			.setPlaceholder('Enter Section Name')
 			.setValue(this.plugin.settings.sectionName)
@@ -253,7 +195,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
             .setName(`Indentation level ${level}`)
-			.setDesc('Toggle to ignore content at this level. Add text before/after the content.')
+			.setDesc('Toggle to ignore. Add text before/after.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings[`ignoreText${levelIndex}`])
 				.onChange(async (value) => {
@@ -282,7 +224,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
             .setName(`Replace method ${level}`)
-			.setDesc('Toggle to enable regex mode. Enter find pattern and replacement text.')
+			.setDesc('Toggle for regex. Enter find/replace text.')
 			.addToggle(toggle => toggle
 				.setValue(this.plugin.settings[`enableRegex${levelIndex}`])
 				.onChange(async (value) => {

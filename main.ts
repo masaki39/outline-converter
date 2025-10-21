@@ -206,9 +206,6 @@ export default class OutlineConverter extends Plugin {
 		for (let i = 1; i <= 5; i++) {
 			const level = i as 1 | 2 | 3 | 4 | 5;
 			transformers.push((line: string): string => {
-				if (this.settings.currentLevel < level) {
-					return "";
-				}
 				if (this.settings[`ignoreText${level}`]) {
 					return this.settings[`beforeText${level}`] + this.settings[`afterText${level}`];
 				}

@@ -12,25 +12,25 @@ export function applyReplacements(content: string, settings: OutlineConverterSet
 
 	for (let i = 1; i <= 5; i++) {
 		const levelIndex = i as LevelIndex;
-		if (settings.currentReplace >= i) {
-			const beforeReplace = settings[`beforeReplace${levelIndex}`];
-			const afterReplace = settings[`afterReplace${levelIndex}`];
-			const enableRegex = settings[`enableRegex${levelIndex}`];
+		const beforeReplace = settings[`beforeReplace${levelIndex}`];
+		const afterReplace = settings[`afterReplace${levelIndex}`];
+		const enableRegex = settings[`enableRegex${levelIndex}`];
 
-			try {
-				if (enableRegex) {
-					const regex = new RegExp(beforeReplace, 'g');
-					result = result.replace(regex, afterReplace);
-				} else {
-					// Escape special regex characters for literal string replacement
-					const escapedPattern = beforeReplace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-					const regex = new RegExp(escapedPattern, 'g');
-					result = result.replace(regex, afterReplace);
-				}
-			} catch (error) {
-				new Notice(`Error in replacement ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
-				throw error;
+		if (!beforeReplace) continue;
+
+		try {
+			if (enableRegex) {
+				const regex = new RegExp(beforeReplace, 'g');
+				result = result.replace(regex, afterReplace);
+			} else {
+				// Escape special regex characters for literal string replacement
+				const escapedPattern = beforeReplace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+				const regex = new RegExp(escapedPattern, 'g');
+				result = result.replace(regex, afterReplace);
 			}
+		} catch (error) {
+			new Notice(`Error in replacement ${i}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+			throw error;
 		}
 	}
 
