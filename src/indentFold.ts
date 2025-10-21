@@ -1,5 +1,5 @@
 import { App, Editor, Plugin, Notice } from "obsidian";
-import { parseFrontmatter } from "./utilis";
+import { parseFrontmatter, calculateIndentLevels } from "./utilis";
 
 export class IndentFold {
 	plugin: Plugin;
@@ -24,32 +24,6 @@ export class IndentFold {
         return { lines, frontmatterLength };
 	}
 
-        // calculate indent levels
-    private calculateIndentLevels(lines: string[], frontmatterLength: number, tabSize: number = (this.app as any).vault.getConfig("tabSize") ?? 4): number[]{        
-        let indentLevels: number[] = [];
-    
-        // Determine the index to start processing from (ignore frontmatter)
-        for (let i = 0; i < lines.length; i++) {
-            if (i < frontmatterLength) {
-                indentLevels.push(0);  // Set front matter lines to level 0
-                continue;
-            }
-        
-            const line = lines[i];
-            let level = 0;
-            const matchTabs = line.match(/^(\t*)- /);
-            const matchSpaces = line.match(/^( *)- /);
-            if (matchTabs) {
-                level = matchTabs[1].length + 1;
-            } else if (matchSpaces) {
-                const leadingSpaces = matchSpaces[1].length;
-                level = Math.floor(leadingSpaces / tabSize) + 1;
-            }
-            indentLevels.push(level);
-        }
-    
-        return indentLevels;
-    }
 
     // get cursor positions
     private getCursorPositions(targetLevel: number, indentLevels: number[]) {
@@ -64,10 +38,13 @@ export class IndentFold {
 
     // 
 
-    // fold specific level
+    /**
+     * Fold all items at a specific indentation level
+     * @param editor - The Obsidian editor instance
+     * @param level - The indentation level to fold (1-5)
+     */
     async foldSpecificLevel(editor: Editor, level: number): Promise<void> {
         try {
-
             // unfold all
             editor.exec('unfoldAll');
 
@@ -76,9 +53,10 @@ export class IndentFold {
             if (result.lines.length === 0) {
                 return;
             }
-            
-            // get indent levels list
-            const indentLevels = this.calculateIndentLevels(result.lines, result.frontmatterLength);
+
+            // get indent levels list using the shared utility function
+            const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
+            const indentLevels = calculateIndentLevels(result.lines, result.frontmatterLength, tabSize);
 
             // get cursor positions (line numbers)
             const cursorPositions = this.getCursorPositions(level, indentLevels);
@@ -93,13 +71,17 @@ export class IndentFold {
             const currentLineNumber = currentCursorPosition.line;
             const currentLineIndentLevel = indentLevels[currentLineNumber];
             let returnCursorPosition = currentCursorPosition;
+
             if (currentLineIndentLevel > level) {
                 // get the nearest cursor position line number that is less than current line number
-                const returnCursorLine = Math.max(...cursorPositions.filter(pos => pos < currentLineNumber)); 
-                returnCursorPosition = {
-                    line: returnCursorLine,
-                    ch: editor.getLine(returnCursorLine)?.length || 0
-                };
+                const validPositions = cursorPositions.filter(pos => pos < currentLineNumber);
+                if (validPositions.length > 0) {
+                    const returnCursorLine = Math.max(...validPositions);
+                    returnCursorPosition = {
+                        line: returnCursorLine,
+                        ch: editor.getLine(returnCursorLine)?.length || 0
+                    };
+                }
             }
 
             // set cursor positions
@@ -120,7 +102,7 @@ export class IndentFold {
 
         } catch (error) {
             console.error('Error in foldSpecificLevel:', error);
-            new Notice('Error occurred while folding');
+            new Notice(`Error occurred while folding: ${error instanceof Error ? error.message : 'Unknown error'}`);
         }
     }
 
