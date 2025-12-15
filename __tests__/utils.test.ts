@@ -109,6 +109,16 @@ describe('calculateIndentLevels', () => {
 		const result = calculateIndentLevels(lines, 0, 4);
 		expect(result).toEqual([1, 0, 2]);
 	});
+
+	it('should respect custom tab size (e.g., 2 spaces)', () => {
+		const lines = [
+			'- Level 1',
+			'  - Level 2',
+			'    - Level 3'
+		];
+		const result = calculateIndentLevels(lines, 0, 2);
+		expect(result).toEqual([1, 2, 3]);
+	});
 });
 
 describe('filterIgnoredLines', () => {

@@ -68,6 +68,36 @@ describe('outputToSection', () => {
 		expect(app.vault.append).not.toHaveBeenCalled();
 	});
 
+	it('replaces a section when the next header is immediately after', async () => {
+		const content = ['## Target', '# Next'].join('\n');
+		const app = buildApp(content);
+		const editor = new MockEditor();
+		const handler = new OutputHandler(app as any);
+
+		await handler.outputToSection(editor as any, 'Target', 'NEW');
+
+		expect(editor.replaceRange).toHaveBeenCalledWith(
+			'NEW',
+			{ line: 1, ch: 0 },
+			{ line: 1, ch: 0 }
+		);
+	});
+
+	it('replaces until file end when no following header exists', async () => {
+		const content = ['# Intro', 'text', '## Target', 'old line 1', 'old line 2'].join('\n');
+		const app = buildApp(content);
+		const editor = new MockEditor();
+		const handler = new OutputHandler(app as any);
+
+		await handler.outputToSection(editor as any, 'Target', 'NEW');
+
+		expect(editor.replaceRange).toHaveBeenCalledWith(
+			'NEW',
+			{ line: 3, ch: 0 },
+			{ line: 4, ch: 'old line 2'.length }
+		);
+	});
+
 	it('inserts a new section after frontmatter when heading is missing', async () => {
 		const content = ['---', 'title: Test', '---', 'Body line'].join('\n');
 
