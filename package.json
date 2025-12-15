@@ -1,6 +1,6 @@
 {
 	"name": "outline-converter",
-	"version": "1.5.1",
+	"version": "1.5.2",
 	"description": "Convert outline to continuous text.",
 	"main": "main.js",
 	"scripts": {
