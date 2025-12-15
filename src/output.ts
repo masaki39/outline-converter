@@ -90,16 +90,14 @@ export class OutputHandler {
 			editor.replaceRange(finalResult, rangeStart, rangeEnd);
 			editor.setCursor(startLine, 0);
 		} else {
-			// append new section to the bottom of the note
+			// append new section (heading + content) to the bottom of the note
 			const endsWithNewline = /\r?\n$/.test(fileContent);
-			const insertionLine = Math.max(lines.length - 1, 0);
-			const insertionCh = lines.length ? lines[insertionLine].length : 0;
-			const prefix = fileContent.length > 0 && !endsWithNewline ? '\n' : '';
-			const insertText = `${prefix}# ${sectionName}\n${finalResult}\n`;
-			const insertionPos = { line: insertionLine, ch: insertionCh };
+			const insertText = `${endsWithNewline ? '' : '\n'}# ${sectionName}\n${finalResult}\n`;
+			await this.app.vault.append(activeFile, insertText);
 
-			editor.replaceRange(insertText, insertionPos, insertionPos);
-			editor.setCursor(insertionLine + (prefix ? 1 : 0), 0);
+			// place cursor at the new heading line
+			const insertionLine = endsWithNewline ? lines.length - 1 : lines.length;
+			editor.setCursor(insertionLine, 0);
 		}
 	}
 }
