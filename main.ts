@@ -4,7 +4,7 @@ import { OutlineConverterSettings, DEFAULT_SETTINGS, OutlineConverterSettingTab 
 import { OutputHandler } from './src/output';
 import { SectionExtractor } from './src/sectionExtractor';
 import { calculateIndentLevels, filterIgnoredLines } from './src/utilis';
-import { applyReplacements, transformLines, autoHeaderTransform } from './src/converter';
+import { applyReplacements, transformLines, autoHeaderTransform, resolvePlaceholders } from './src/converter';
 
 export default class OutlineConverter extends Plugin {
 	settings: OutlineConverterSettings;
@@ -45,14 +45,11 @@ export default class OutlineConverter extends Plugin {
 						filteredLines,
 						filteredLevels,
 						this.settings.startHeader,
-						this.settings.addSpace
+						resolvePlaceholders(this.settings.addSpace)
 					);
 
 					// apply replacement methods
 					result = applyReplacements(result, this.settings);
-
-					// transform linebreak
-					result = result.replace(/\\n/g, "\n");
 
 					// process section links
 					result = await this.sectionExtractor.processSectionLinks(result);
@@ -91,9 +88,6 @@ export default class OutlineConverter extends Plugin {
 
 					// apply replacement methods
 					result = applyReplacements(result, this.settings);
-
-					// transform linebreak
-					result = result.replace(/\\n/g, "\n");
 
 					// process section links
 					result = await this.sectionExtractor.processSectionLinks(result);
@@ -208,11 +202,14 @@ export default class OutlineConverter extends Plugin {
 
 		for (let i = 1; i <= 5; i++) {
 			const level = i as 1 | 2 | 3 | 4 | 5;
+			const before = resolvePlaceholders(this.settings[`beforeText${level}`]);
+			const after = resolvePlaceholders(this.settings[`afterText${level}`]);
+
 			transformers.push((line: string): string => {
 				if (this.settings[`ignoreText${level}`]) {
-					return this.settings[`beforeText${level}`] + this.settings[`afterText${level}`];
+					return before + after;
 				}
-				return this.settings[`beforeText${level}`] + line + this.settings[`afterText${level}`];
+				return before + line + after;
 			});
 		}
 

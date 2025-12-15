@@ -54,6 +54,24 @@ describe('applyReplacements', () => {
 
 		expect(() => applyReplacements('test', settings)).toThrow();
 	});
+
+	it('should resolve \\n placeholders in replacement text', () => {
+		settings.beforeReplace1 = 'foo';
+		settings.afterReplace1 = '\\nbar';
+		settings.enableRegex1 = false;
+
+		const result = applyReplacements('foo', settings);
+		expect(result).toBe('\nbar');
+	});
+
+	it('should resolve \\n placeholders in find pattern (regex mode)', () => {
+		settings.beforeReplace1 = '\\n+';
+		settings.afterReplace1 = ' ';
+		settings.enableRegex1 = true;
+
+		const result = applyReplacements('a\n\nb', settings);
+		expect(result).toBe('a b');
+	});
 });
 
 describe('transformLines', () => {

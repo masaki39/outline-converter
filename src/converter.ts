@@ -2,6 +2,15 @@ import { Notice } from 'obsidian';
 import { OutlineConverterSettings, LevelIndex } from './settings';
 
 /**
+ * Convert placeholder escape sequences (e.g., \\n) into actual characters.
+ * Used at runtime so settings can store human-readable placeholders.
+ */
+export function resolvePlaceholders(value: string | undefined): string {
+	if (!value) return '';
+	return value.replace(/\\n/g, '\n');
+}
+
+/**
  * Apply replacement methods to the content
  * @param content - The content to process
  * @param settings - Plugin settings
@@ -12,8 +21,8 @@ export function applyReplacements(content: string, settings: OutlineConverterSet
 
 	for (let i = 1; i <= 5; i++) {
 		const levelIndex = i as LevelIndex;
-		const beforeReplace = settings[`beforeReplace${levelIndex}`];
-		const afterReplace = settings[`afterReplace${levelIndex}`];
+		const beforeReplace = resolvePlaceholders(settings[`beforeReplace${levelIndex}`]);
+		const afterReplace = resolvePlaceholders(settings[`afterReplace${levelIndex}`]);
 		const enableRegex = settings[`enableRegex${levelIndex}`];
 
 		if (!beforeReplace) continue;
