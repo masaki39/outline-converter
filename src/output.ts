@@ -90,11 +90,16 @@ export class OutputHandler {
 			editor.replaceRange(finalResult, rangeStart, rangeEnd);
 			editor.setCursor(startLine, 0);
 		} else {
-			// insert new section after frontmatter (or at very top if none)
-			const insertionLine = normalizedFrontmatterLines.length;
-			const insertText = `# ${sectionName}\n${finalResult}\n\n`;
-			editor.replaceRange(insertText, { line: insertionLine, ch: 0 }, { line: insertionLine, ch: 0 });
-			editor.setCursor(insertionLine, 0);
+			// append new section to the bottom of the note
+			const endsWithNewline = /\r?\n$/.test(fileContent);
+			const insertionLine = Math.max(lines.length - 1, 0);
+			const insertionCh = lines.length ? lines[insertionLine].length : 0;
+			const prefix = fileContent.length > 0 && !endsWithNewline ? '\n' : '';
+			const insertText = `${prefix}# ${sectionName}\n${finalResult}\n`;
+			const insertionPos = { line: insertionLine, ch: insertionCh };
+
+			editor.replaceRange(insertText, insertionPos, insertionPos);
+			editor.setCursor(insertionLine + (prefix ? 1 : 0), 0);
 		}
 	}
 }

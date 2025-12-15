@@ -98,7 +98,7 @@ describe('outputToSection', () => {
 		);
 	});
 
-	it('inserts a new section after frontmatter when heading is missing', async () => {
+	it('appends a new section to the bottom when heading is missing', async () => {
 		const content = ['---', 'title: Test', '---', 'Body line'].join('\n');
 
 		const app = buildApp(content);
@@ -108,11 +108,11 @@ describe('outputToSection', () => {
 		await handler.outputToSection(editor as any, 'New Section', 'NEW');
 
 		expect(editor.replaceRange).toHaveBeenCalledWith(
-			'# New Section\nNEW\n\n',
-			{ line: 3, ch: 0 },
-			{ line: 3, ch: 0 }
+			'\n# New Section\nNEW\n',
+			{ line: 3, ch: 'Body line'.length },
+			{ line: 3, ch: 'Body line'.length }
 		);
-		expect(editor.setCursor).toHaveBeenCalledWith(3, 0);
+		expect(editor.setCursor).toHaveBeenCalledWith(4, 0);
 		expect(app.vault.append).not.toHaveBeenCalled();
 	});
 });
