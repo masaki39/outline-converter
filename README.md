@@ -57,6 +57,11 @@ Lines starting with `//` (with or without space) will have their content ignored
 
 Apply up to 5 find-and-replace operations with regex support. Replacements are processed sequentially.
 
+#### Special characters in settings
+- You can write placeholders in settings: `\n` (newline), `\r` (carriage return), `\t` (tab), and `\\` (backslash). They are expanded at runtime.
+- Other escape sequences stay as-is, so regex tokens like `\s`, `\d`, etc. work normally.
+- If you want to match the literal text `\n` in regex mode, write `\\n`. In non-regex mode, just write `\n` to search the literal backslash+n string.
+
 ### Section Insertion
 
 Insert content from other sections using `[[#SectionName]]` syntax. Works with both `[[#Section]]` and `![[#Section]]` formats.
