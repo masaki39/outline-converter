@@ -81,7 +81,7 @@ Control text transformation at each indentation level (1–5). For each level, a
   ```
 
 > [!note]
-> Lines starting with `//` (with or without space) have their content ignored, but before/after text is still applied. This applies to both Auto-header and Custom converter.
+> Lines starting with `//` (with or without space) have their content ignored, but before/after text is still applied.
 
 ### Replacement (Find & Replace)
 

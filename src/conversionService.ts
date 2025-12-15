@@ -81,9 +81,13 @@ export class ConversionService {
 		}
 
 		const { frontmatter, content } = parseFrontmatter(fileContent);
-		const frontmatterLines = frontmatter.split(/\r?\n/).slice(0, -1);
-		const lines = [...frontmatterLines, ...content.split(/\r?\n/)];
-		return { lines, frontmatterLength: frontmatterLines.length };
+		const frontmatterLines = frontmatter ? frontmatter.split(/\r?\n/) : [];
+		const normalizedFrontmatterLines =
+			frontmatterLines.length && frontmatterLines[frontmatterLines.length - 1] === ''
+				? frontmatterLines.slice(0, -1)
+				: frontmatterLines;
+		const lines = [...normalizedFrontmatterLines, ...content.split(/\r?\n/)];
+		return { lines, frontmatterLength: normalizedFrontmatterLines.length };
 	}
 
 	private createCustomTransformers(settings: OutlineConverterSettings): Array<(line: string) => string> {

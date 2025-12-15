@@ -21,6 +21,20 @@ describe('parseFrontmatter', () => {
 		expect(result.frontmatter).toBe('');
 		expect(result.content).toBe(content);
 	});
+
+	it('should handle Windows line endings', () => {
+		const content = '---\r\ntitle: Test\r\n---\r\nBody';
+		const result = parseFrontmatter(content);
+		expect(result.frontmatter).toBe('---\r\ntitle: Test\r\n---\r\n');
+		expect(result.content).toBe('Body');
+	});
+
+	it('should handle frontmatter ending at EOF', () => {
+		const content = '---\ntitle: Test\n---';
+		const result = parseFrontmatter(content);
+		expect(result.frontmatter).toBe('---\ntitle: Test\n---');
+		expect(result.content).toBe('');
+	});
 });
 
 describe('calculateIndentLevels', () => {

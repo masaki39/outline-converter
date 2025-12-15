@@ -1,24 +1,27 @@
 export function parseFrontmatter(fileContent: string): { frontmatter: string, content: string } {
-    // 最初の文字が'---'で始まらない場合は早期リターン
-    if (!fileContent.startsWith('---\n')) {
+    // Frontmatter must start with --- followed by a newline (LF or CRLF)
+    if (!fileContent.startsWith('---\n') && !fileContent.startsWith('---\r\n')) {
         return {
             frontmatter: '',
             content: fileContent
         };
     }
 
-    // 2つ目の'---'を探す
-    const secondDelimiterIndex = fileContent.indexOf('\n---\n', 4);
-    if (secondDelimiterIndex === -1) {
+    // Match up to the second --- (handles both LF/CRLF and EOF after closing ---)
+    const frontmatterMatch = fileContent.match(/^---\r?\n[\s\S]*?\r?\n---(?:\r?\n|$)/);
+    if (!frontmatterMatch) {
         return {
             frontmatter: '',
             content: fileContent
         };
     }
+
+    const frontmatter = frontmatterMatch[0];
+    const content = fileContent.slice(frontmatter.length);
 
     return {
-        frontmatter: fileContent.slice(0, secondDelimiterIndex + 5), // ---\nまで含める
-        content: fileContent.slice(secondDelimiterIndex + 5)         // 残りの部分
+        frontmatter,
+        content
     };
 }
 

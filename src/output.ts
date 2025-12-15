@@ -1,4 +1,5 @@
 import { App, Editor } from 'obsidian';
+import { parseFrontmatter } from './utilis';
 
 export class OutputHandler {
 	app: App;
@@ -41,36 +42,59 @@ export class OutputHandler {
 			return;
 		}
 		const fileContent = await this.app.vault.read(activeFile);
-		const lines = fileContent.split(/\r?\n/);
+		const { frontmatter, content } = parseFrontmatter(fileContent);
+		const frontmatterLines = frontmatter ? frontmatter.split(/\r?\n/) : [];
+		const normalizedFrontmatterLines =
+			frontmatterLines.length && frontmatterLines[frontmatterLines.length - 1] === ''
+				? frontmatterLines.slice(0, -1)
+				: frontmatterLines;
+		const lines = [...normalizedFrontmatterLines, ...content.split(/\r?\n/)];
 
 		// define values
-		let startLine = null;
-		let endLine = null;
-		let endCh = null;
+		let startLine: number | null = null;
+		let sectionLevel = 0;
 
-		// determine the values above
+		// find target heading (any level)
 		for (let index = 0; index < lines.length; index++) {
-			const line = lines[index].trim(); // trim each line
-			if (line === `# ${sectionName}`.trim()) {
+			const match = lines[index].match(/^(#+)\s+(.*)$/);
+			if (match && match[2].trim() === sectionName.trim()) {
 				startLine = index + 1;
-			} else if (line.startsWith(`# `) && startLine && !endLine) {
-				endLine = index - 1;
-				endCh = lines[endLine].length;
+				sectionLevel = match[1].length;
 				break;
 			}
 		}
-		if (startLine && !endLine) {
-			endLine = lines.length - 1; // adjust index
-			endCh = lines[endLine].length;
-		}
-		console.log(`replaceRange:{${startLine},0},{${endLine},${endCh}}`);
 
 		// output the result
-		if (startLine && endLine && endCh !== null) {
-			editor.replaceRange(finalResult, { line: startLine, ch: 0 }, { line: endLine, ch: endCh });
+		if (startLine !== null) {
+			let nextHeaderIndex: number | null = null;
+			for (let index = startLine; index < lines.length; index++) {
+				const match = lines[index].match(/^(#+)\s+/);
+				if (match && match[1].length <= sectionLevel) {
+					nextHeaderIndex = index;
+					break;
+				}
+			}
+
+			const rangeStart = { line: startLine, ch: 0 };
+			let rangeEnd: { line: number; ch: number };
+			if (nextHeaderIndex === null) {
+				const endLine = lines.length - 1;
+				rangeEnd = { line: endLine, ch: lines[endLine]?.length ?? 0 };
+			} else if (nextHeaderIndex <= startLine) {
+				rangeEnd = rangeStart;
+			} else {
+				const endLine = nextHeaderIndex - 1;
+				rangeEnd = { line: endLine, ch: lines[endLine]?.length ?? 0 };
+			}
+
+			editor.replaceRange(finalResult, rangeStart, rangeEnd);
 			editor.setCursor(startLine, 0);
 		} else {
-			this.app.vault.append(activeFile, `\n# ${sectionName}\n` + finalResult);
+			// insert new section after frontmatter (or at very top if none)
+			const insertionLine = normalizedFrontmatterLines.length;
+			const insertText = `# ${sectionName}\n${finalResult}\n\n`;
+			editor.replaceRange(insertText, { line: insertionLine, ch: 0 }, { line: insertionLine, ch: 0 });
+			editor.setCursor(insertionLine, 0);
 		}
 	}
 }

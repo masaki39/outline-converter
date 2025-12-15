@@ -10,7 +10,7 @@ export class IndentFold {
         this.app = plugin.app;
 	}
    
-    // transform content to lines and get frontmatter length
+	// transform content to lines and get frontmatter length
 	private async splitContent(): Promise<{ lines: string[], frontmatterLength: number }> {
         const activeFile = this.app.workspace.getActiveFile();
         if (!activeFile) {
@@ -19,8 +19,13 @@ export class IndentFold {
         }
         const fileContent = await this.app.vault.read(activeFile);
         const { frontmatter, content } = parseFrontmatter(fileContent);
-        const lines = [...frontmatter.split(/\r?\n/).slice(0, -1), ...content.split(/\r?\n/)];
-        const frontmatterLength = frontmatter.split(/\r?\n/).slice(0, -1).length;
+        const frontmatterLines = frontmatter ? frontmatter.split(/\r?\n/) : [];
+        const normalizedFrontmatterLines =
+            frontmatterLines.length && frontmatterLines[frontmatterLines.length - 1] === ''
+                ? frontmatterLines.slice(0, -1)
+                : frontmatterLines;
+        const lines = [...normalizedFrontmatterLines, ...content.split(/\r?\n/)];
+        const frontmatterLength = normalizedFrontmatterLines.length;
         return { lines, frontmatterLength };
 	}
 
