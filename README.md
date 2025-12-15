@@ -66,18 +66,18 @@ Control text transformation at each indentation level (1–5). For each level, a
   ## Features
 
   ### Auto-header
-  Turn children into headers automatically. 
+  Turn children into headers automatically.
 
   ### Custom converter
-  Customize text per indentation level. 
+  Customize text per indentation level.
 
   ## Usage
 
   ### Select text or whole note
-  Works on selection or full note. 
+  Works on selection or full note.
 
   ### Run command
-  Trigger from the command palette or a hotkey. 
+  Trigger from the command palette or a hotkey.
   ```
 
 > [!note]
@@ -93,7 +93,7 @@ Apply up to 5 find-and-replace operations with regex support. Replacements are p
 |---------|-------|------|---------|
 | Collapse 3+ blank lines to 2 | ✅ | `\n{3,}` | `\n\n` |
 | Trim trailing spaces | ✅ | `[ \t]+$` | (empty) |
-| Normalize double spaces in prose | ✅ | ` {2,}` | ` ` (single space) |
+| Normalize double spaces in prose | ✅ | ` {2,}` | (single space) |
 | Remove spaces before punctuation | ✅ | `\s+([.,!?])` | `$1` |
 
 > [!important]
@@ -103,6 +103,26 @@ Apply up to 5 find-and-replace operations with regex support. Replacements are p
 ### Section Insertion
 
 Insert content from other sections in the active file using `[[#SectionName]]`. Works with both `[[#Section]]` and `![[#Section]]` formats. Useful when you keep prose outside the outline and want to pull it into the converted text.
+
+**Example:**
+
+- Current note
+  ```markdown
+  # Tasks
+  Today: write docs and publish the release.
+
+  # Outline
+  - Project
+  	- Tasks
+  		- [[#Tasks]]
+  ```
+- Output
+  ```markdown
+  ## Project
+
+  ### Tasks
+  Today: write docs and publish the release.
+  ```
 
 ### Export Methods
 
