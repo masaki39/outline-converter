@@ -3,14 +3,14 @@ import { IndentFold } from './src/indentFold';
 import { OutlineConverterSettings, DEFAULT_SETTINGS, OutlineConverterSettingTab } from './src/settings';
 import { OutputHandler } from './src/output';
 import { SectionExtractor } from './src/sectionExtractor';
-import { calculateIndentLevels, filterIgnoredLines } from './src/utilis';
-import { applyReplacements, transformLines, autoHeaderTransform, resolvePlaceholders } from './src/converter';
+import { ConversionService } from './src/conversionService';
 
 export default class OutlineConverter extends Plugin {
 	settings: OutlineConverterSettings;
 	private foldLevel: IndentFold;
 	private outputHandler: OutputHandler;
 	private sectionExtractor: SectionExtractor;
+	private conversionService: ConversionService;
 
 	async onload() {
 		await this.loadSettings();
@@ -19,6 +19,7 @@ export default class OutlineConverter extends Plugin {
 		this.foldLevel = new IndentFold(this);
 		this.outputHandler = new OutputHandler(this.app);
 		this.sectionExtractor = new SectionExtractor(this.app);
+		this.conversionService = new ConversionService(this.app, this.outputHandler, this.sectionExtractor);
 
 		// loading
 		await this.foldLevel.onload();
@@ -29,33 +30,7 @@ export default class OutlineConverter extends Plugin {
 			name: 'Auto-header converter',
 			editorCallback: async (editor: Editor) => {
 				try {
-					// get lines
-					const { lines, frontmatterLength } = await this.splitContent(editor);
-					if (lines.length === 0) return;
-
-					// get indent levels list
-					const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
-					let indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
-
-					// filter ignored lines
-					const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
-
-					// transform & connect
-					let result = autoHeaderTransform(
-						filteredLines,
-						filteredLevels,
-						this.settings.startHeader,
-						resolvePlaceholders(this.settings.addSpace)
-					);
-
-					// apply replacement methods
-					result = applyReplacements(result, this.settings);
-
-					// process section links
-					result = await this.sectionExtractor.processSectionLinks(result);
-
-					// export
-					this.exportResult(editor, result);
+					await this.conversionService.runAutoHeader(editor, this.settings);
 				} catch (error) {
 					new Notice(`Error in auto-header converter: ${error instanceof Error ? error.message : 'Unknown error'}`);
 					console.error('Auto-header converter error:', error);
@@ -69,31 +44,7 @@ export default class OutlineConverter extends Plugin {
 			name: 'Custom converter',
 			editorCallback: async (editor: Editor) => {
 				try {
-					// get lines
-					const { lines, frontmatterLength } = await this.splitContent(editor);
-					if (lines.length === 0) return;
-
-					// get indent levels list
-					const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
-					let indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
-
-					// filter ignored lines
-					const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
-
-					// create custom transformers
-					const transformers = this.createCustomTransformers();
-
-					// transform & connect
-					let result = transformLines(filteredLines, filteredLevels, transformers);
-
-					// apply replacement methods
-					result = applyReplacements(result, this.settings);
-
-					// process section links
-					result = await this.sectionExtractor.processSectionLinks(result);
-
-					// export
-					this.exportResult(editor, result);
+					await this.conversionService.runCustomConvert(editor, this.settings);
 				} catch (error) {
 					new Notice(`Error in custom converter: ${error instanceof Error ? error.message : 'Unknown error'}`);
 					console.error('Custom converter error:', error);
@@ -172,68 +123,6 @@ export default class OutlineConverter extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
-	}
-
-	/**
-	 * Split content into lines from editor selection or entire file
-	 */
-	async splitContent(editor: Editor): Promise<{ lines: string[], frontmatterLength: number }> {
-		let fileContent = editor.getSelection();
-		if (!fileContent) {
-			const activeFile = this.app.workspace.getActiveFile();
-			if (!activeFile) {
-				new Notice('No active file.');
-				return { lines: [], frontmatterLength: 0 };
-			}
-			fileContent = await this.app.vault.read(activeFile);
-		}
-		const { parseFrontmatter } = await import('./src/utilis');
-		const { frontmatter, content } = parseFrontmatter(fileContent);
-		const lines = [...frontmatter.split(/\r?\n/).slice(0, -1), ...content.split(/\r?\n/)];
-		const frontmatterLength = frontmatter.split(/\r?\n/).slice(0, -1).length;
-		return { lines, frontmatterLength };
-	}
-
-	/**
-	 * Create custom transformer functions for each indentation level
-	 */
-	private createCustomTransformers(): Array<(line: string) => string> {
-		const transformers: Array<(line: string) => string> = [];
-
-		for (let i = 1; i <= 5; i++) {
-			const level = i as 1 | 2 | 3 | 4 | 5;
-			const before = resolvePlaceholders(this.settings[`beforeText${level}`]);
-			const after = resolvePlaceholders(this.settings[`afterText${level}`]);
-
-			transformers.push((line: string): string => {
-				if (this.settings[`ignoreText${level}`]) {
-					return before + after;
-				}
-				return before + line + after;
-			});
-		}
-
-		return transformers;
-	}
-
-	/**
-	 * Export result based on selected export method
-	 */
-	private exportResult(editor: Editor, result: string): void {
-		switch (this.settings.exportMethod) {
-			case 'Copy':
-				this.outputHandler.copyContent(result);
-				break;
-			case 'Cursor':
-				this.outputHandler.appendCursor(editor, result);
-				break;
-			case 'Bottom':
-				this.outputHandler.appendBottom(result);
-				break;
-			case 'Section':
-				this.outputHandler.outputToSection(editor, this.settings.sectionName, result);
-				break;
-		}
 	}
 
 }
