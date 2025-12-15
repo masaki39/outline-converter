@@ -92,7 +92,7 @@ export class OutputHandler {
 		} else {
 			// append new section (heading + content) to the bottom of the note
 			const endsWithNewline = /\r?\n$/.test(fileContent);
-			const insertText = `${endsWithNewline ? '' : '\n'}# ${sectionName}\n${finalResult}\n`;
+			const insertText = `${endsWithNewline ? '' : '\n'}\n# ${sectionName}\n${finalResult}\n`;
 			await this.app.vault.append(activeFile, insertText);
 
 			// place cursor at the new heading line

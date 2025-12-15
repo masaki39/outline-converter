@@ -107,7 +107,7 @@ describe('outputToSection', () => {
 
 		await handler.outputToSection(editor as any, 'New Section', 'NEW');
 
-		expect(app.vault.append).toHaveBeenCalledWith(expect.anything(), '\n# New Section\nNEW\n');
+		expect(app.vault.append).toHaveBeenCalledWith(expect.anything(), '\n\n# New Section\nNEW\n');
 		expect(editor.replaceRange).not.toHaveBeenCalled();
 		expect(editor.setCursor).toHaveBeenCalledWith(4, 0);
 	});
