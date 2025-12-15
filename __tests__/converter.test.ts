@@ -1,4 +1,4 @@
-import { applyReplacements, transformLines, autoHeaderTransform } from '../src/converter';
+import { applyReplacements, transformLines, autoHeaderTransform, resolvePlaceholders } from '../src/converter';
 import { OutlineConverterSettings, DEFAULT_SETTINGS } from '../src/settings';
 
 describe('applyReplacements', () => {
@@ -71,6 +71,18 @@ describe('applyReplacements', () => {
 
 		const result = applyReplacements('a\n\nb', settings);
 		expect(result).toBe('a b');
+	});
+});
+
+describe('resolvePlaceholders', () => {
+	it('converts common escapes and leaves others intact', () => {
+		const input = '\\nLine\\t\\r\\s';
+		const result = resolvePlaceholders(input);
+		expect(result).toBe('\nLine\t\r\\s'); // \s should remain as literal backslash+s
+	});
+
+	it('collapses escaped backslashes', () => {
+		expect(resolvePlaceholders('\\\\path')).toBe('\\path');
 	});
 });
 

@@ -7,7 +7,13 @@ import { OutlineConverterSettings, LevelIndex } from './settings';
  */
 export function resolvePlaceholders(value: string | undefined): string {
 	if (!value) return '';
-	return value.replace(/\\n/g, '\n');
+	const escapeMap: Record<string, string> = {
+		n: '\n',
+		r: '\r',
+		t: '\t',
+		'\\': '\\',
+	};
+	return value.replace(/\\(.)/g, (_, key) => escapeMap[key] ?? `\\${key}`);
 }
 
 /**
