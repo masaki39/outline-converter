@@ -18,7 +18,8 @@ export class OutputHandler {
 		if (editor.getSelection()) {
 			editor.replaceSelection(result);
 		} else {
-			editor.replaceRange(result, editor.getCursor());
+			const cursor = editor.getCursor();
+			editor.replaceRange(result, cursor, cursor);
 		}
 	}
 

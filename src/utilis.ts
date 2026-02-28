@@ -50,7 +50,7 @@ export function calculateIndentLevels(
         let level = 0;
 
         // Check for tab-indented list items
-        const matchTabs = line.match(/^(\t*)- /);
+        const matchTabs = line.match(/^(\t*)[-*+] /);
         if (matchTabs) {
             level = matchTabs[1].length + 1;
             indentLevels.push(level);
@@ -58,7 +58,7 @@ export function calculateIndentLevels(
         }
 
         // Check for space-indented list items
-        const matchSpaces = line.match(/^( *)- /);
+        const matchSpaces = line.match(/^( *)[-*+] /);
         if (matchSpaces) {
             const leadingSpaces = matchSpaces[1].length;
             level = Math.floor(leadingSpaces / tabSize) + 1;

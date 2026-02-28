@@ -119,6 +119,26 @@ describe('calculateIndentLevels', () => {
 		const result = calculateIndentLevels(lines, 0, 2);
 		expect(result).toEqual([1, 2, 3]);
 	});
+
+	it('should calculate indent levels for * bullet marker', () => {
+		const lines = [
+			'* Level 1',
+			'\t* Level 2',
+			'\t\t* Level 3',
+		];
+		const result = calculateIndentLevels(lines, 0, 4);
+		expect(result).toEqual([1, 2, 3]);
+	});
+
+	it('should calculate indent levels for + bullet marker', () => {
+		const lines = [
+			'+ Level 1',
+			'    + Level 2',
+			'        + Level 3',
+		];
+		const result = calculateIndentLevels(lines, 0, 4);
+		expect(result).toEqual([1, 2, 3]);
+	});
 });
 
 describe('filterIgnoredLines', () => {
