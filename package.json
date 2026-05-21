@@ -13,11 +13,6 @@
 	"keywords": [],
 	"author": "masaki39",
 	"license": "MIT",
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild"
-		]
-	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
