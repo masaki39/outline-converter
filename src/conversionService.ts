@@ -1,4 +1,8 @@
 import { App, Editor, Notice } from 'obsidian';
+
+type AppInternal = App & {
+	vault: { getConfig(key: string): unknown };
+};
 import { OutlineConverterSettings, LevelIndex } from './settings';
 import { OutputHandler } from './output';
 import { SectionExtractor } from './sectionExtractor';
@@ -26,7 +30,7 @@ export class ConversionService {
 			const { lines, frontmatterLength } = await this.splitContent(editor);
 			if (lines.length === 0) return;
 
-			const tabSize = (this.app as any).vault.getConfig('tabSize') ?? 4;
+			const tabSize = ((this.app as unknown as AppInternal).vault.getConfig('tabSize') as number | null) ?? 4;
 			const indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
 			const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
 
@@ -40,7 +44,7 @@ export class ConversionService {
 			result = applyReplacements(result, settings);
 			result = await this.sectionExtractor.processSectionLinks(result);
 
-			this.exportResult(editor, result, settings);
+			await this.exportResult(editor, result, settings);
 		} catch (error) {
 			new Notice(`Error in auto-header converter: ${error instanceof Error ? error.message : 'Unknown error'}`);
 			console.error('Auto-header converter error:', error);
@@ -52,7 +56,7 @@ export class ConversionService {
 			const { lines, frontmatterLength } = await this.splitContent(editor);
 			if (lines.length === 0) return;
 
-			const tabSize = (this.app as any).vault.getConfig('tabSize') ?? 4;
+			const tabSize = ((this.app as unknown as AppInternal).vault.getConfig('tabSize') as number | null) ?? 4;
 			const indentLevels = calculateIndentLevels(lines, frontmatterLength, tabSize);
 			const { filteredLines, filteredLevels } = filterIgnoredLines(lines, indentLevels);
 
@@ -62,7 +66,7 @@ export class ConversionService {
 			result = applyReplacements(result, settings);
 			result = await this.sectionExtractor.processSectionLinks(result);
 
-			this.exportResult(editor, result, settings);
+			await this.exportResult(editor, result, settings);
 		} catch (error) {
 			new Notice(`Error in custom converter: ${error instanceof Error ? error.message : 'Unknown error'}`);
 			console.error('Custom converter error:', error);
@@ -109,7 +113,7 @@ export class ConversionService {
 		return transformers;
 	}
 
-	private exportResult(editor: Editor, result: string, settings: OutlineConverterSettings): void {
+	private async exportResult(editor: Editor, result: string, settings: OutlineConverterSettings): Promise<void> {
 		switch (settings.exportMethod) {
 			case 'Copy':
 				this.outputHandler.copyContent(result);
@@ -118,10 +122,10 @@ export class ConversionService {
 				this.outputHandler.appendCursor(editor, result);
 				break;
 			case 'Bottom':
-				this.outputHandler.appendBottom(result);
+				await this.outputHandler.appendBottom(result);
 				break;
 			case 'Section':
-				this.outputHandler.outputToSection(editor, settings.sectionName, result);
+				await this.outputHandler.outputToSection(editor, settings.sectionName, result);
 				break;
 		}
 	}

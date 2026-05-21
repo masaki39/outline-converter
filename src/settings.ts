@@ -93,7 +93,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		// auto header
-		containerEl.createEl('h2', { text: 'Auto-header converter' });
+		new Setting(containerEl).setName('Auto-header converter').setHeading();
 		containerEl.createEl('p', {
 			text: 'Converts outline to text with headers. Items with children become headers.',
 			cls: 'setting-item-description'
@@ -122,7 +122,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 			}));
 
 		//custom converter
-		containerEl.createEl('h2', { text: 'Custom converter' });
+		new Setting(containerEl).setName('Custom converter').setHeading();
 		containerEl.createEl('p', {
 			text: 'Customize conversion per indent level. Add text before/after or ignore content. Use \\n for linebreaks.',
 			cls: 'setting-item-description'
@@ -134,7 +134,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		}
 
 		// replace methods
-		containerEl.createEl('h2', { text: 'Replacement' });
+		new Setting(containerEl).setName('Replacement').setHeading();
 		containerEl.createEl('p', {
 			text: 'Find & replace operations. Toggle checkbox for regex mode.',
 			cls: 'setting-item-description'
@@ -146,7 +146,7 @@ export class OutlineConverterSettingTab extends PluginSettingTab {
 		}
 
 		// export settings
-		containerEl.createEl('h2', { text: 'Export method' });
+		new Setting(containerEl).setName('Export method').setHeading();
 		containerEl.createEl('p', {
 			text: 'Output destination for converted text.',
 			cls: 'setting-item-description'

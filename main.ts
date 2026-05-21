@@ -1,4 +1,11 @@
-import { Editor, Notice, Plugin } from 'obsidian';
+import { App, Editor, Notice, Plugin } from 'obsidian';
+
+type AppInternal = App & {
+	commands: {
+		listCommands(): Array<{ id: string; name: string }>;
+		executeCommandById(id: string): void;
+	};
+};
 import { IndentFold } from './src/indentFold';
 import { OutlineConverterSettings, DEFAULT_SETTINGS, OutlineConverterSettingTab } from './src/settings';
 import { OutputHandler } from './src/output';
@@ -59,8 +66,8 @@ export default class OutlineConverter extends Plugin {
 
 				//check if outliner commands exist
 				const commandId = "obsidian-outliner:move-list-item-up";
-				const commands = (this.app as any).commands;
-				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
+				const commands = (this.app as unknown as AppInternal).commands;
+				const commandExist = commands.listCommands().some(cmd => cmd.id === commandId);
 
 				const cursor = editor.getCursor();
 				if (cursor.line == 0) {
@@ -86,8 +93,8 @@ export default class OutlineConverter extends Plugin {
 		
 				// Check if outliner commands exist
 				const commandId = "obsidian-outliner:move-list-item-down";
-				const commands = (this.app as any).commands;
-				const commandExist = commands.listCommands().some((cmd: any) => cmd.id === commandId);
+				const commands = (this.app as unknown as AppInternal).commands;
+				const commandExist = commands.listCommands().some(cmd => cmd.id === commandId);
 		
 				const cursor = editor.getCursor();
 				const lastLineNumber = editor.lineCount() - 1; // Get the index of the last line

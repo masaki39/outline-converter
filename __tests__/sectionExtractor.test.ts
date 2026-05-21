@@ -1,10 +1,8 @@
 import { SectionExtractor } from '../src/sectionExtractor';
 
-jest.mock('obsidian');
-
 class MockVault {
 	content: string;
-	read = jest.fn();
+	read = vi.fn();
 
 	constructor(content: string) {
 		this.content = content;
@@ -13,7 +11,7 @@ class MockVault {
 }
 
 class MockWorkspace {
-	getActiveFile = jest.fn().mockReturnValue({});
+	getActiveFile = vi.fn().mockReturnValue({});
 }
 
 const buildApp = (content: string) => {

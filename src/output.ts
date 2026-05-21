@@ -10,7 +10,7 @@ export class OutputHandler {
 
 	// copy content
 	copyContent(result: string): void {
-		navigator.clipboard.writeText(result);
+		void navigator.clipboard.writeText(result);
 	}
 
 	// append content to cursor
@@ -24,10 +24,10 @@ export class OutputHandler {
 	}
 
 	// append content to note bottom
-	appendBottom(result: string): void {
+	async appendBottom(result: string): Promise<void> {
 		const activeFile = this.app.workspace.getActiveFile();
 		if (activeFile) {
-			this.app.vault.append(activeFile, '\n' + result);
+			await this.app.vault.append(activeFile, '\n' + result);
 		}
 	}
 

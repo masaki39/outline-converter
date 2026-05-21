@@ -1,4 +1,9 @@
 import { App, Editor, Plugin, Notice } from "obsidian";
+
+type AppInternal = App & {
+	vault: { getConfig(key: string): unknown };
+	commands: { executeCommandById(id: string): void };
+};
 import { parseFrontmatter, calculateIndentLevels } from "./utilis";
 
 export class IndentFold {
@@ -60,7 +65,7 @@ export class IndentFold {
             }
 
             // get indent levels list using the shared utility function
-            const tabSize = (this.app as any).vault.getConfig("tabSize") ?? 4;
+            const tabSize = ((this.app as unknown as AppInternal).vault.getConfig("tabSize") as number | null) ?? 4;
             const indentLevels = calculateIndentLevels(result.lines, result.frontmatterLength, tabSize);
 
             // get cursor positions (line numbers)
@@ -97,7 +102,7 @@ export class IndentFold {
             editor.setSelections(selections);
 
             // fold the indentlevel
-            (this.app as any).commands.executeCommandById('editor:fold-more');
+            (this.app as unknown as AppInternal).commands.executeCommandById('editor:fold-more');
 
             // set cursor to the nearest cursor position
             editor.setCursor(returnCursorPosition);

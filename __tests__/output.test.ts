@@ -1,12 +1,10 @@
 import { OutputHandler } from '../src/output';
 import { parseFrontmatter } from '../src/utilis';
 
-jest.mock('obsidian');
-
 class MockVault {
 	content: string;
-	read = jest.fn();
-	append = jest.fn();
+	read = vi.fn();
+	append = vi.fn();
 
 	constructor(content: string) {
 		this.content = content;
@@ -15,12 +13,12 @@ class MockVault {
 }
 
 class MockWorkspace {
-	getActiveFile = jest.fn().mockReturnValue({});
+	getActiveFile = vi.fn().mockReturnValue({});
 }
 
 class MockEditor {
-	replaceRange = jest.fn();
-	setCursor = jest.fn();
+	replaceRange = vi.fn();
+	setCursor = vi.fn();
 }
 
 const buildApp = (content: string) => {
