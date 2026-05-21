@@ -1,6 +1,6 @@
 {
 	"name": "outline-converter",
-	"version": "1.5.4",
+	"version": "1.5.5",
 	"description": "Convert outline to continuous text.",
 	"main": "main.js",
 	"scripts": {
@@ -14,7 +14,9 @@
 	"author": "masaki39",
 	"license": "MIT",
 	"pnpm": {
-		"onlyBuiltDependencies": ["esbuild"]
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
 	},
 	"devDependencies": {
 		"@types/node": "^22.0.0",
