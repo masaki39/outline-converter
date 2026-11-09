@@ -116,7 +116,29 @@ export class IndentFold {
         }
     }
 
+    /**
+     * Fold all items at the indentation level of the current cursor line
+     * @param editor - The Obsidian editor instance
+     */
+    async foldCurrentLevel(editor: Editor): Promise<void> {
+        const line = editor.getLine(editor.getCursor().line) ?? '';
+        const tabSize = ((this.app as unknown as AppInternal).vault.getConfig("tabSize") as number | null) ?? 4;
+        const [level] = calculateIndentLevels([line], 0, tabSize);
+        if (!level) {
+            new Notice('Cursor is not on a list item.');
+            return;
+        }
+        await this.foldSpecificLevel(editor, level);
+    }
+
     async onload(): Promise<void> {
+        this.plugin.addCommand({
+            id: 'fold-current-level',
+            name: 'Fold all of current cursor indentation level',
+            editorCallback: async (editor: Editor) => {
+                await this.foldCurrentLevel(editor);
+            }
+        });
 
         for (let i = 1; i <= 5; i++) {
         this.plugin.addCommand({

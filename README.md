@@ -138,6 +138,7 @@ Insert content from other sections in the active file using `[[#SectionName]]`. 
 ### Fold Commands
 
 Quickly fold all items at a specific indentation level (1-5) using the command palette.
+Use **Fold all of current cursor indentation level** to fold all items at the same level as the line under the cursor.
 
 ### Swap Lines Commands
 
